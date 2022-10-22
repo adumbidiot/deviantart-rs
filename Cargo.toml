@@ -44,3 +44,9 @@ cli = [
     "tokio/rt-multi-thread",
     "toml",
 ]
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+opt-level = 3
+strip = "symbols"
