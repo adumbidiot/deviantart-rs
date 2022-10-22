@@ -1,6 +1,20 @@
 use super::Deviation;
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::collections::HashMap;
 use url::Url;
+
+/// An error that may occur while parsing a [`ScrapedWebPageInfo`] from a html string.
+#[derive(Debug, thiserror::Error)]
+pub enum FromHtmlStrError {
+    /// Missing the InitialState variable
+    #[error("missing initial state")]
+    MissingInitialState,
+
+    /// Failed to parse some state
+    #[error(transparent)]
+    InvalidJson(#[from] serde_json::Error),
+}
 
 /// Info scraped from a deviation url
 #[derive(Debug, serde::Deserialize)]
@@ -27,6 +41,31 @@ pub struct ScrapedWebPageInfo {
 }
 
 impl ScrapedWebPageInfo {
+    /// Parse this from a html string
+    pub fn from_html_str(input: &str) -> Result<Self, FromHtmlStrError> {
+        static REGEX: Lazy<Regex> = Lazy::new(|| {
+            Regex::new(r#"window\.__INITIAL_STATE__ = JSON\.parse\("(.*)"\);"#)
+                .expect("invalid `scrape_deviation` regex")
+        });
+
+        let capture = REGEX
+            .captures(input)
+            .and_then(|captures| captures.get(1))
+            .ok_or(FromHtmlStrError::MissingInitialState)?;
+        // TODO: Escape properly
+        let capture = capture
+            .as_str()
+            .replace("\\\"", "\"")
+            .replace("\\'", "'")
+            .replace("\\\\", "\\");
+        Ok(serde_json::from_str(&capture)?)
+    }
+
+    /// Returns `true` if logged in
+    pub fn is_logged_in(&self) -> bool {
+        self.public_session.is_logged_in
+    }
+
     /// Get the current deviation's id
     pub fn get_current_deviation_id(&self) -> Option<&serde_json::Value> {
         Some(

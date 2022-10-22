@@ -1,8 +1,7 @@
 use crate::Error;
 use crate::OEmbed;
+use crate::ScrapedStashInfo;
 use crate::ScrapedWebPageInfo;
-use once_cell::sync::Lazy;
-use regex::Regex;
 use reqwest::header::HeaderMap;
 use reqwest::header::HeaderValue;
 use reqwest_cookie_store::CookieStoreMutex;
@@ -56,11 +55,6 @@ impl Client {
 
     /// Scrape a webpage for info.
     pub async fn scrape_webpage(&self, url: &str) -> Result<ScrapedWebPageInfo, Error> {
-        static REGEX: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r#"window\.__INITIAL_STATE__ = JSON\.parse\("(.*)"\);"#)
-                .expect("invalid `scrape_deviation` regex")
-        });
-
         let text = self
             .client
             .get(url)
@@ -70,22 +64,8 @@ impl Client {
             .text()
             .await?;
 
-        let scraped_webpage = tokio::task::spawn_blocking(move || {
-            let capture = REGEX
-                .captures(&text)
-                .and_then(|captures| captures.get(1))
-                .ok_or(Error::MissingInitialState)?;
-            // TODO: Escape properly
-            let capture = capture
-                .as_str()
-                .replace("\\\"", "\"")
-                .replace("\\'", "'")
-                .replace("\\\\", "\\");
-            let scraped_webpage: ScrapedWebPageInfo = serde_json::from_str(&capture)?;
-
-            Result::<_, Error>::Ok(scraped_webpage)
-        })
-        .await??;
+        let scraped_webpage =
+            tokio::task::spawn_blocking(move || ScrapedWebPageInfo::from_html_str(&text)).await??;
 
         Ok(scraped_webpage)
     }
@@ -134,8 +114,12 @@ impl Client {
             .await?
             .error_for_status()?;
 
-        // TODO: Verify login
-        let _text = res.text().await?;
+        let text = res.text().await?;
+        let scraped_webpage =
+            tokio::task::spawn_blocking(move || ScrapedWebPageInfo::from_html_str(&text)).await??;
+        if !scraped_webpage.is_logged_in() {
+            return Err(Error::SignInFailed);
+        }
 
         Ok(())
     }
@@ -145,8 +129,7 @@ impl Client {
         Ok(self
             .scrape_webpage("https://www.deviantart.com/")
             .await?
-            .public_session
-            .is_logged_in)
+            .is_logged_in())
     }
 
     /// OEmbed API
@@ -161,6 +144,23 @@ impl Client {
             .json()
             .await?;
         Ok(res)
+    }
+
+    /// Scrape a sta.sh link for info
+    pub async fn scrape_stash_info(&self, url: &str) -> Result<ScrapedStashInfo, Error> {
+        let text = self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
+
+        let scraped_stash =
+            tokio::task::spawn_blocking(move || ScrapedStashInfo::from_html_str(&text)).await??;
+
+        Ok(scraped_stash)
     }
 }
 
@@ -240,5 +240,16 @@ mod test {
         let client = Client::new();
         let oembed = client.get_oembed("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914").await.expect("failed to get oembed");
         assert!(oembed.title == "A Fictorian Tale Chapter 11");
+    }
+
+    #[tokio::test]
+    async fn scrape_stash_info_works() {
+        let client = Client::new();
+        let url = "https://sta.sh/02bhirtp3iwq";
+        let stash = client
+            .scrape_stash_info(url)
+            .await
+            .expect("failed to scrape stash");
+        assert!(stash.deviationid == 590293385);
     }
 }
