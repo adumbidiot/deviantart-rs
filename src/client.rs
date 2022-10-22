@@ -1,3 +1,4 @@
+use crate::Deviation;
 use crate::Error;
 use crate::OEmbed;
 use crate::ScrapedStashInfo;
@@ -162,11 +163,99 @@ impl Client {
 
         Ok(scraped_stash)
     }
+
+    /// Run a search using the low level api
+    pub async fn search_raw(
+        &self,
+        query: &str,
+        cursor: Option<&str>,
+    ) -> Result<ScrapedWebPageInfo, Error> {
+        let mut url = Url::parse_with_params("https://www.deviantart.com/search", &[("q", query)])?;
+        {
+            let mut query_pairs = url.query_pairs_mut();
+            if let Some(cursor) = cursor {
+                query_pairs.append_pair("cursor", cursor);
+            }
+        }
+
+        self.scrape_webpage(url.as_str()).await
+    }
+
+    /// Run a search
+    pub fn search(&self, query: &str, cursor: Option<&str>) -> SearchCursor {
+        SearchCursor::new(self.clone(), query, cursor)
+    }
 }
 
 impl Default for Client {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[derive(Debug)]
+pub struct SearchCursor {
+    /// The client
+    client: Client,
+
+    /// The current page
+    page: Option<ScrapedWebPageInfo>,
+
+    /// the query
+    query: String,
+    /// the cursor
+    cursor: Option<String>,
+}
+
+impl SearchCursor {
+    /// Make a new Search Cursor
+    pub fn new(client: Client, query: &str, cursor: Option<&str>) -> Self {
+        Self {
+            client,
+
+            page: None,
+
+            query: query.into(),
+            cursor: cursor.map(|c| c.into()),
+        }
+    }
+
+    /// Get the next page, updating the internal cursor.
+    pub async fn next_page(&mut self) -> Result<Vec<&Deviation>, Error> {
+        let page = self
+            .client
+            .search_raw(&self.query, self.cursor.as_deref())
+            .await?;
+        // Validate before storing
+        if page
+            .streams
+            .as_ref()
+            .ok_or(Error::MissingStreams)?
+            .browse_page_stream
+            .is_none()
+        {
+            return Err(Error::MissingBrowsePageStream);
+        }
+        self.page = Some(page);
+        let page = self.page.as_ref().unwrap();
+
+        let browse_page_stream = page
+            .streams
+            .as_ref()
+            .unwrap()
+            .browse_page_stream
+            .as_ref()
+            .unwrap();
+        self.cursor = Some(browse_page_stream.cursor.clone());
+
+        browse_page_stream
+            .items
+            .iter()
+            .map(|id| {
+                page.get_deviation_by_id(*id)
+                    .ok_or_else(|| Error::MissingDeviation(*id))
+            })
+            .collect()
     }
 }
 
@@ -251,5 +340,13 @@ mod test {
             .await
             .expect("failed to scrape stash");
         assert!(stash.deviationid == 590293385);
+    }
+
+    #[tokio::test]
+    async fn it_works() {
+        let client = Client::new();
+        let mut cursor = client.search("sun", None);
+        let next_page = cursor.next_page().await.expect("failed to get next page");
+        dbg!(next_page);
     }
 }
