@@ -1,4 +1,5 @@
 use crate::Error;
+use crate::OEmbed;
 use crate::ScrapedWebPageInfo;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -6,6 +7,7 @@ use reqwest::header::HeaderMap;
 use reqwest::header::HeaderValue;
 use reqwest_cookie_store::CookieStoreMutex;
 use std::sync::Arc;
+use url::Url;
 
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36";
 
@@ -146,6 +148,20 @@ impl Client {
             .public_session
             .is_logged_in)
     }
+
+    /// OEmbed API
+    pub async fn get_oembed(&self, url: &str) -> Result<OEmbed, Error> {
+        let url = Url::parse_with_params("https://backend.deviantart.com/oembed", &[("url", url)])?;
+        let res = self
+            .client
+            .get(url.as_str())
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
+        Ok(res)
+    }
 }
 
 impl Default for Client {
@@ -195,5 +211,34 @@ mod test {
             .await
             .expect("failed to check if online");
         assert!(is_online);
+    }
+
+    #[tokio::test]
+    async fn scrape_webpage_literature() {
+        let client = Client::new();
+        let scraped_webpage = client
+            .scrape_webpage("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914")
+            .await
+            .expect("failed to scrape webpage");
+        let current_deviation = scraped_webpage
+            .get_current_deviation()
+            .expect("missing current deviation");
+        let text_content = current_deviation
+            .text_content
+            .as_ref()
+            .expect("missing text content");
+        let _markup = text_content
+            .html
+            .get_markup()
+            .expect("missing markup")
+            .expect("failed to parse markup");
+        // dbg!(&markup);
+    }
+
+    #[tokio::test]
+    async fn oembed_works() {
+        let client = Client::new();
+        let oembed = client.get_oembed("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914").await.expect("failed to get oembed");
+        assert!(oembed.title == "A Fictorian Tale Chapter 11");
     }
 }
