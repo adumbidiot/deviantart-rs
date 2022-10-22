@@ -1,5 +1,6 @@
 use crate::Error;
 use crate::OEmbed;
+use crate::ScrapedStashInfo;
 use crate::ScrapedWebPageInfo;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -115,7 +116,6 @@ impl Client {
             .await?
             .error_for_status()?;
 
-        // TODO: Verify login
         let text = res.text().await?;
         let scraped_webpage =
             tokio::task::spawn_blocking(move || ScrapedWebPageInfo::from_html_str(&text)).await??;
@@ -146,6 +146,35 @@ impl Client {
             .json()
             .await?;
         Ok(res)
+    }
+
+    /// Scrape a sta.sh link for info
+    pub async fn scrape_stash_info(&self, url: &str) -> Result<ScrapedStashInfo, Error> {
+        static REGEX: Lazy<Regex> = Lazy::new(|| {
+            Regex::new(r#"deviantART.pageData=(.*);"#).expect("invalid `scrape_stash_info` regex")
+        });
+
+        let text = self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
+
+        let scraped_stash = tokio::task::spawn_blocking(move || {
+            let capture = REGEX
+                .captures(&text)
+                .and_then(|captures| captures.get(1))
+                .ok_or(Error::MissingPageData)?;
+            let scraped_stash: ScrapedStashInfo = serde_json::from_str(capture.as_str())?;
+
+            Result::<_, Error>::Ok(scraped_stash)
+        })
+        .await??;
+
+        Ok(scraped_stash)
     }
 }
 
@@ -225,5 +254,16 @@ mod test {
         let client = Client::new();
         let oembed = client.get_oembed("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914").await.expect("failed to get oembed");
         assert!(oembed.title == "A Fictorian Tale Chapter 11");
+    }
+
+    #[tokio::test]
+    async fn scrape_stash_info_works() {
+        let client = Client::new();
+        let url = "https://sta.sh/02bhirtp3iwq";
+        let stash = client
+            .scrape_stash_info(url)
+            .await
+            .expect("failed to scrape stash");
+        dbg!(stash);
     }
 }

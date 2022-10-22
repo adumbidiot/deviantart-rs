@@ -6,6 +6,7 @@ pub mod types;
 pub use self::client::Client;
 pub use self::types::Deviation;
 pub use self::types::OEmbed;
+pub use self::types::ScrapedStashInfo;
 pub use self::types::ScrapedWebPageInfo;
 
 /// Library Error
@@ -34,6 +35,10 @@ pub enum Error {
     /// Signing in failed for an unspecified reason
     #[error("sign in failed")]
     SignInFailed,
+
+    /// Missing the pageData variable
+    #[error("missing pageData variable")]
+    MissingPageData,
 }
 
 // TODO:
