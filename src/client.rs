@@ -253,7 +253,7 @@ impl SearchCursor {
             .iter()
             .map(|id| {
                 page.get_deviation_by_id(*id)
-                    .ok_or_else(|| Error::MissingDeviation(*id))
+                    .ok_or(Error::MissingDeviation(*id))
             })
             .collect()
     }
