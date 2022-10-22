@@ -348,13 +348,11 @@ mod test {
         let mut cursor = client.search("sun", None);
         let results = cursor.next_page().await.expect("failed to get next page");
         let first = &results.first().expect("no results");
-        eprintln!("using deviation `{}`", first.deviation_id);
 
         let url = first
             .get_download_url()
             .or_else(|| first.get_fullview_url())
             .expect("failed to find download url");
-        eprintln!("downloading `{url}`...");
         let bytes = client
             .client
             .get(url)
