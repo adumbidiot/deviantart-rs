@@ -65,7 +65,14 @@ impl Deviation {
 
         // Allow the "content" section of the path to not exist, but the fullview data MUST exist.
         if let Some(path) = self.media.get_fullview_media_type()?.content.as_ref() {
-            url.path_segments_mut().ok()?.push(path);
+            let mut path_segments_mut = url.path_segments_mut().ok()?;
+
+            for path in path.split('/').filter(|p| !p.is_empty()) {
+                // Replace "<pretty-name>" with the actual pretty name.
+                let pretty_name = self.media.pretty_name.as_ref()?;
+                let path = path.replace("<prettyName>", pretty_name);
+                path_segments_mut.push(&path);
+            }
         }
 
         // We assume that a token is not provided in cases where it is not needed.

@@ -39,6 +39,18 @@ pub enum Error {
     /// Signing in failed for an unspecified reason
     #[error("sign in failed")]
     SignInFailed,
+
+    /// Missing the streams field
+    #[error("missing streams")]
+    MissingStreams,
+
+    /// Missing the browse page stream
+    #[error("missing browse page stream")]
+    MissingBrowsePageStream,
+
+    /// Missing the Deviation of the given id
+    #[error("missing deviation {0}")]
+    MissingDeviation(u64),
 }
 
 // TODO:

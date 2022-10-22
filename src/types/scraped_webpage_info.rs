@@ -35,6 +35,10 @@ pub struct ScrapedWebPageInfo {
     #[serde(rename = "@@publicSession")]
     pub public_session: PublicSession,
 
+    /// Streams
+    #[serde(rename = "@@streams")]
+    pub streams: Option<Streams>,
+
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
@@ -81,16 +85,12 @@ impl ScrapedWebPageInfo {
     /// Get the [`Deviation`] for this page.
     pub fn get_current_deviation(&self) -> Option<&Deviation> {
         let id = self.get_current_deviation_id()?;
-        let mut key_buffer = itoa::Buffer::new();
-        let key = match id {
-            serde_json::Value::Number(n) => {
-                let n = n.as_u64()?;
-                key_buffer.format(n)
-            }
-            serde_json::Value::String(s) => s,
+        let id = match id {
+            serde_json::Value::Number(n) => n.as_u64()?,
+            serde_json::Value::String(s) => s.parse().ok()?,
             _ => return None,
         };
-        self.entities.as_ref()?.deviation.get(key)
+        self.get_deviation_by_id(id)
     }
 
     /// Get the [`DeviationExtended`] for this page.
@@ -110,6 +110,12 @@ impl ScrapedWebPageInfo {
             .deviation_extended
             .as_ref()?
             .get(key)
+    }
+
+    /// Get a deviation by id, if it exists
+    pub fn get_deviation_by_id(&self, id: u64) -> Option<&Deviation> {
+        let mut key_buffer = itoa::Buffer::new();
+        self.entities.as_ref()?.deviation.get(key_buffer.format(id))
     }
 }
 
@@ -207,6 +213,84 @@ pub struct PublicSession {
     /// Whether the user is logged in
     #[serde(rename = "isLoggedIn")]
     pub is_logged_in: bool,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// The streams field
+#[derive(Debug, serde::Deserialize)]
+pub struct Streams {
+    /// Search results appear here
+    #[serde(rename = "@@BROWSE_PAGE_STREAM")]
+    pub browse_page_stream: Option<BrowsePageStream>,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// Search results appear here
+#[derive(Debug, serde::Deserialize)]
+pub struct BrowsePageStream {
+    /// The cursor
+    pub cursor: String,
+
+    /// Whether this has less?
+    #[serde(rename = "hasLess")]
+    pub has_less: bool,
+
+    /// Whether this has more?
+    #[serde(rename = "hasMore")]
+    pub has_more: bool,
+
+    /// deviation ids
+    pub items: Vec<u64>,
+
+    /// The # of items per page
+    #[serde(rename = "itemsPerFetch")]
+    pub items_per_fetch: u64,
+
+    /// Stream Params
+    #[serde(rename = "streamParams")]
+    pub stream_params: StreamParams,
+
+    /// The stream type
+    #[serde(rename = "streamType")]
+    pub stream_type: String,
+
+    /// The stream id
+    #[serde(rename = "streamId")]
+    pub stream_id: String,
+
+    /// ?
+    #[serde(rename = "fetchNextCallback")]
+    pub fetch_next_callback: String,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// Stream params
+#[derive(Debug, serde::Deserialize)]
+pub struct StreamParams {
+    /// Request params
+    #[serde(rename = "requestParams")]
+    pub request_params: HashMap<String, String>,
+
+    /// ?
+    #[serde(rename = "itemType")]
+    pub item_type: String,
+
+    /// ?
+    #[serde(rename = "requestEndpoint")]
+    pub request_endpoint: String,
+
+    /// ?
+    #[serde(rename = "initialOffset")]
+    pub initial_offset: u64,
 
     /// Unknown data
     #[serde(flatten)]
