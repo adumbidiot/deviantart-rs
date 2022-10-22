@@ -3,6 +3,7 @@ use crate::Error;
 use crate::OEmbed;
 use crate::ScrapedStashInfo;
 use crate::ScrapedWebPageInfo;
+use crate::WrapBoxError;
 use reqwest::header::HeaderMap;
 use reqwest::header::HeaderValue;
 use reqwest_cookie_store::CookieStoreMutex;
@@ -52,6 +53,38 @@ impl Client {
             client,
             cookie_store,
         }
+    }
+
+    /// Load the cookie store from a json reader.
+    pub async fn load_json_cookies<R>(&self, reader: R) -> Result<(), Error>
+    where
+        R: std::io::BufRead + Send + 'static,
+    {
+        let cookie_store = self.cookie_store.clone();
+        tokio::task::spawn_blocking(move || {
+            let new_cookie_store = reqwest_cookie_store::CookieStore::load_json(reader)
+                .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
+            let mut cookie_store = cookie_store.lock().expect("cookie store is poisoned");
+            *cookie_store = new_cookie_store;
+            Ok(())
+        })
+        .await?
+    }
+
+    /// Save the cookie store from a json writer.
+    pub async fn save_json_cookies<W>(&self, mut writer: W) -> Result<(), Error>
+    where
+        W: std::io::Write + Send + 'static,
+    {
+        let cookie_store = self.cookie_store.clone();
+        tokio::task::spawn_blocking(move || {
+            let cookie_store = cookie_store.lock().expect("cookie store is poisoned");
+            cookie_store
+                .save_json(&mut writer)
+                .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
+            Ok(())
+        })
+        .await?
     }
 
     /// Scrape a webpage for info.

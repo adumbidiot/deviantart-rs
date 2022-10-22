@@ -6,17 +6,6 @@ use anyhow::bail;
 use anyhow::Context;
 use std::path::PathBuf;
 
-#[derive(Debug)]
-struct WrapBoxError(Box<dyn std::error::Error + Send + Sync + 'static>);
-
-impl std::fmt::Display for WrapBoxError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-impl std::error::Error for WrapBoxError {}
-
 #[derive(argh::FromArgs)]
 #[argh(description = "a tool to interact with deviantart")]
 struct Options {
@@ -76,8 +65,8 @@ async fn try_signin_cli(
     username: Option<&str>,
     password: Option<&str>,
 ) -> anyhow::Result<()> {
-    if let Err(e) = load_cookie_jar(client) {
-        eprintln!("Failed to load cookie jar: {:?}", e);
+    if let Err(e) = load_cookie_jar(client).await {
+        eprintln!("failed to load cookie jar: {:?}", e);
     }
 
     if !client
@@ -95,7 +84,10 @@ async fn try_signin_cli(
                 println!("logged in");
                 println!();
 
-                if let Err(e) = save_cookie_jar(client).context("failed to save cookies") {
+                if let Err(e) = save_cookie_jar(client)
+                    .await
+                    .context("failed to save cookies")
+                {
                     println!("{:?}", e);
                 }
             }
@@ -126,34 +118,22 @@ fn get_cookie_file_path() -> anyhow::Result<PathBuf> {
     Ok(base_dirs.data_dir().join("deviantart/cookies.json"))
 }
 
-fn load_cookie_jar(client: &deviantart::Client) -> anyhow::Result<()> {
+async fn load_cookie_jar(client: &deviantart::Client) -> anyhow::Result<()> {
     use std::{fs::File, io::BufReader};
 
     let cookie_file = File::open(get_cookie_file_path()?).context("failed to read cookies")?;
-    let mut cookie_store = client
-        .cookie_store
-        .lock()
-        .expect("cookie store is poisoned");
-    let new_cookie_store =
-        reqwest_cookie_store::CookieStore::load_json(BufReader::new(cookie_file))
-            .map_err(WrapBoxError)?;
-    *cookie_store = new_cookie_store;
-
+    client
+        .load_json_cookies(BufReader::new(cookie_file))
+        .await?;
     Ok(())
 }
 
-fn save_cookie_jar(client: &deviantart::Client) -> anyhow::Result<()> {
+async fn save_cookie_jar(client: &deviantart::Client) -> anyhow::Result<()> {
     use std::fs::File;
 
-    let mut cookie_file =
+    let cookie_file =
         File::create(get_cookie_file_path()?).context("failed to create cookie file")?;
-    let cookie_store = client
-        .cookie_store
-        .lock()
-        .expect("cookie store is poisoned");
-    cookie_store
-        .save_json(&mut cookie_file)
-        .map_err(WrapBoxError)?;
+    client.save_json_cookies(cookie_file).await?;
 
     Ok(())
 }
