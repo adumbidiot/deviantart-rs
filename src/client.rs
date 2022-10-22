@@ -2,8 +2,6 @@ use crate::Error;
 use crate::OEmbed;
 use crate::ScrapedStashInfo;
 use crate::ScrapedWebPageInfo;
-use once_cell::sync::Lazy;
-use regex::Regex;
 use reqwest::header::HeaderMap;
 use reqwest::header::HeaderValue;
 use reqwest_cookie_store::CookieStoreMutex;
@@ -150,10 +148,6 @@ impl Client {
 
     /// Scrape a sta.sh link for info
     pub async fn scrape_stash_info(&self, url: &str) -> Result<ScrapedStashInfo, Error> {
-        static REGEX: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r#"deviantART.pageData=(.*);"#).expect("invalid `scrape_stash_info` regex")
-        });
-
         let text = self
             .client
             .get(url)
@@ -163,16 +157,8 @@ impl Client {
             .text()
             .await?;
 
-        let scraped_stash = tokio::task::spawn_blocking(move || {
-            let capture = REGEX
-                .captures(&text)
-                .and_then(|captures| captures.get(1))
-                .ok_or(Error::MissingPageData)?;
-            let scraped_stash: ScrapedStashInfo = serde_json::from_str(capture.as_str())?;
-
-            Result::<_, Error>::Ok(scraped_stash)
-        })
-        .await??;
+        let scraped_stash =
+            tokio::task::spawn_blocking(move || ScrapedStashInfo::from_html_str(&text)).await??;
 
         Ok(scraped_stash)
     }
@@ -264,6 +250,6 @@ mod test {
             .scrape_stash_info(url)
             .await
             .expect("failed to scrape stash");
-        dbg!(stash);
+        assert!(stash.deviationid == 590293385);
     }
 }

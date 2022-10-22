@@ -1,5 +1,19 @@
+use once_cell::sync::Lazy;
+use regex::Regex;
 use std::collections::HashMap;
 use url::Url;
+
+/// An error that may occur while parsing a [`ScrapedStashInfo`] from a html str.
+#[derive(Debug, thiserror::Error)]
+pub enum FromHtmlStrError {
+    /// Missing the pageData variable
+    #[error("missing pageData variable")]
+    MissingPageData,
+
+    /// Failed to parse json
+    #[error(transparent)]
+    InvalidJson(#[from] serde_json::Error),
+}
 
 /// Scraped info from a sta.sh link
 #[derive(Debug, serde::Deserialize)]
@@ -22,6 +36,23 @@ pub struct ScrapedStashInfo {
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
+}
+
+impl ScrapedStashInfo {
+    /// Parse this from a html str
+    pub fn from_html_str(input: &str) -> Result<Self, FromHtmlStrError> {
+        static REGEX: Lazy<Regex> = Lazy::new(|| {
+            Regex::new(r#"deviantART.pageData=(.*);"#).expect("invalid `scrape_stash_info` regex")
+        });
+
+        let capture = REGEX
+            .captures(input)
+            .and_then(|captures| captures.get(1))
+            .ok_or(FromHtmlStrError::MissingPageData)?;
+        let scraped_stash: ScrapedStashInfo = serde_json::from_str(capture.as_str())?;
+
+        Ok(scraped_stash)
+    }
 }
 
 /// Film data from a sta.sh link

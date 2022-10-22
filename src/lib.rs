@@ -32,13 +32,13 @@ pub enum Error {
     #[error("invalid scraped webpage")]
     InvalidScrapedWebPage(#[from] self::types::scraped_webpage_info::FromHtmlStrError),
 
+    /// Scraped Stash info was invalid
+    #[error("invalid scraped stash info")]
+    InvalidScrapedStashInfo(#[from] self::types::scraped_stash_info::FromHtmlStrError),
+
     /// Signing in failed for an unspecified reason
     #[error("sign in failed")]
     SignInFailed,
-
-    /// Missing the pageData variable
-    #[error("missing pageData variable")]
-    MissingPageData,
 }
 
 // TODO:
