@@ -30,6 +30,10 @@ pub enum Error {
     /// A scraped web page was invalid
     #[error("invalid scraped webpage")]
     InvalidScrapedWebPage(#[from] self::types::scraped_webpage_info::FromHtmlStrError),
+
+    /// Signing in failed for an unspecified reason
+    #[error("sign in failed")]
+    SignInFailed,
 }
 
 // TODO:

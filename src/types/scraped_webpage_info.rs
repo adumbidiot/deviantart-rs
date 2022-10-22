@@ -61,6 +61,11 @@ impl ScrapedWebPageInfo {
         Ok(serde_json::from_str(&capture)?)
     }
 
+    /// Returns `true` if logged in
+    pub fn is_logged_in(&self) -> bool {
+        self.public_session.is_logged_in
+    }
+
     /// Get the current deviation's id
     pub fn get_current_deviation_id(&self) -> Option<&serde_json::Value> {
         Some(

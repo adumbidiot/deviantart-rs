@@ -116,7 +116,12 @@ impl Client {
             .error_for_status()?;
 
         // TODO: Verify login
-        let _text = res.text().await?;
+        let text = res.text().await?;
+        let scraped_webpage =
+            tokio::task::spawn_blocking(move || ScrapedWebPageInfo::from_html_str(&text)).await??;
+        if !scraped_webpage.is_logged_in() {
+            return Err(Error::SignInFailed);
+        }
 
         Ok(())
     }
@@ -126,8 +131,7 @@ impl Client {
         Ok(self
             .scrape_webpage("https://www.deviantart.com/")
             .await?
-            .public_session
-            .is_logged_in)
+            .is_logged_in())
     }
 
     /// OEmbed API
