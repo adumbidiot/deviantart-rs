@@ -3,6 +3,7 @@ use crate::Error;
 use crate::OEmbed;
 use crate::ScrapedStashInfo;
 use crate::ScrapedWebPageInfo;
+use crate::WrapBoxError;
 use reqwest::header::HeaderMap;
 use reqwest::header::HeaderValue;
 use reqwest_cookie_store::CookieStoreMutex;
@@ -52,6 +53,38 @@ impl Client {
             client,
             cookie_store,
         }
+    }
+
+    /// Load the cookie store from a json reader.
+    pub async fn load_json_cookies<R>(&self, reader: R) -> Result<(), Error>
+    where
+        R: std::io::BufRead + Send + 'static,
+    {
+        let cookie_store = self.cookie_store.clone();
+        tokio::task::spawn_blocking(move || {
+            let new_cookie_store = reqwest_cookie_store::CookieStore::load_json(reader)
+                .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
+            let mut cookie_store = cookie_store.lock().expect("cookie store is poisoned");
+            *cookie_store = new_cookie_store;
+            Ok(())
+        })
+        .await?
+    }
+
+    /// Save the cookie store from a json writer.
+    pub async fn save_json_cookies<W>(&self, mut writer: W) -> Result<(), Error>
+    where
+        W: std::io::Write + Send + 'static,
+    {
+        let cookie_store = self.cookie_store.clone();
+        tokio::task::spawn_blocking(move || {
+            let cookie_store = cookie_store.lock().expect("cookie store is poisoned");
+            cookie_store
+                .save_json(&mut writer)
+                .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
+            Ok(())
+        })
+        .await?
     }
 
     /// Scrape a webpage for info.
@@ -220,24 +253,9 @@ impl SearchCursor {
         }
     }
 
-    /// Get the next page, updating the internal cursor.
-    pub async fn next_page(&mut self) -> Result<Vec<&Deviation>, Error> {
-        let page = self
-            .client
-            .search_raw(&self.query, self.cursor.as_deref())
-            .await?;
-        // Validate before storing
-        if page
-            .streams
-            .as_ref()
-            .ok_or(Error::MissingStreams)?
-            .browse_page_stream
-            .is_none()
-        {
-            return Err(Error::MissingBrowsePageStream);
-        }
-        self.page = Some(page);
-        let page = self.page.as_ref().unwrap();
+    /// Get the current page of deviations
+    pub fn current_deviations(&self) -> Option<Result<Vec<&Deviation>, Error>> {
+        let page = self.page.as_ref()?;
 
         let browse_page_stream = page
             .streams
@@ -246,16 +264,67 @@ impl SearchCursor {
             .browse_page_stream
             .as_ref()
             .unwrap();
-        self.cursor = Some(browse_page_stream.cursor.clone());
 
-        browse_page_stream
-            .items
-            .iter()
-            .map(|id| {
-                page.get_deviation_by_id(*id)
-                    .ok_or(Error::MissingDeviation(*id))
-            })
-            .collect()
+        Some(
+            browse_page_stream
+                .items
+                .iter()
+                .map(|id| {
+                    page.get_deviation_by_id(*id)
+                        .ok_or(Error::MissingDeviation(*id))
+                })
+                .collect(),
+        )
+    }
+
+    /// Take the current page of deviations
+    pub fn take_current_deviations(&mut self) -> Option<Result<Vec<Deviation>, Error>> {
+        let mut page = self.page.take()?;
+
+        let browse_page_stream = page
+            .streams
+            .as_mut()
+            .unwrap()
+            .browse_page_stream
+            .as_mut()
+            .unwrap();
+
+        let items = std::mem::take(&mut browse_page_stream.items);
+        Some(
+            items
+                .iter()
+                .map(|id| {
+                    page.take_deviation_by_id(*id)
+                        .ok_or(Error::MissingDeviation(*id))
+                })
+                .collect(),
+        )
+    }
+
+    /// Get the next page, updating the internal cursor.
+    pub async fn next_page(&mut self) -> Result<(), Error> {
+        let page = self
+            .client
+            .search_raw(&self.query, self.cursor.as_deref())
+            .await?;
+        // Validate before storing
+        match page
+            .streams
+            .as_ref()
+            .ok_or(Error::MissingStreams)?
+            .browse_page_stream
+            .as_ref()
+        {
+            Some(browse_page_stream) => {
+                self.cursor = Some(browse_page_stream.cursor.clone());
+            }
+            None => {
+                return Err(Error::MissingBrowsePageStream);
+            }
+        }
+        self.page = Some(page);
+
+        Ok(())
     }
 }
 
@@ -345,8 +414,15 @@ mod test {
     #[tokio::test]
     async fn it_works() {
         let client = Client::new();
-        let mut cursor = client.search("sun", None);
-        let results = cursor.next_page().await.expect("failed to get next page");
+        let mut search_cursor = client.search("sun", None);
+        search_cursor
+            .next_page()
+            .await
+            .expect("failed to get next page");
+        let results = search_cursor
+            .current_deviations()
+            .expect("missing page")
+            .expect("failed to look up deviations");
         let first = &results.first().expect("no results");
 
         let url = first
@@ -366,6 +442,13 @@ mod test {
             .expect("failed to buffer bytes");
 
         std::fs::write("test.jpg", &bytes).expect("failed to write to file");
-        let _results = cursor.next_page().await.expect("failed to get next page");
+        search_cursor
+            .next_page()
+            .await
+            .expect("failed to get next page");
+        let _results = search_cursor
+            .current_deviations()
+            .expect("missing page")
+            .expect("failed to look up deviations");
     }
 }

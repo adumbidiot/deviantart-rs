@@ -5,6 +5,7 @@ pub mod types;
 
 pub use self::client::Client;
 pub use self::types::Deviation;
+pub use self::types::DeviationExtended;
 pub use self::types::OEmbed;
 pub use self::types::ScrapedStashInfo;
 pub use self::types::ScrapedWebPageInfo;
@@ -51,7 +52,23 @@ pub enum Error {
     /// Missing the Deviation of the given id
     #[error("missing deviation {0}")]
     MissingDeviation(u64),
+
+    /// A cookie store error occured
+    #[error("cookie store error")]
+    CookieStore(WrapBoxError),
 }
+
+/// A wrapper over a `Box<dyn std::error::Error + Send + Sync + 'static>`.
+#[derive(Debug)]
+pub struct WrapBoxError(pub Box<dyn std::error::Error + Send + Sync + 'static>);
+
+impl std::fmt::Display for WrapBoxError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::error::Error for WrapBoxError {}
 
 // TODO:
 // investigate deviantart.com/view/<id>

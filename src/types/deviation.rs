@@ -133,14 +133,13 @@ impl Deviation {
         None
     }
     /// Try to get the original extension of this [`Deviation`]
-    // Shows as bug in earlier clippy versions
-    #[allow(clippy::or_fun_call)]
     pub fn get_extension(&self) -> Option<&str> {
         if self.is_image() {
             let url = self
                 .media
                 .get_gif_media_type()
-                .and_then(|media_type| media_type.b.as_ref().or(self.media.base_uri.as_ref()))?;
+                .and_then(|media_type| media_type.b.as_ref())
+                .or(self.media.base_uri.as_ref())?;
             Path::new(url.as_str()).extension()?.to_str()
         } else if self.is_literature() {
             None
