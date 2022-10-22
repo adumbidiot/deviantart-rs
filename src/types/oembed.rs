@@ -1,5 +1,5 @@
 use std::collections::HashMap;
- use url::Url;
+use url::Url;
 
 /// DeviantArt OEmbed
 #[derive(Debug, serde::Deserialize)]

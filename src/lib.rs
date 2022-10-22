@@ -5,6 +5,7 @@ mod types;
 
 pub use self::client::Client;
 pub use self::types::Deviation;
+pub use self::types::OEmbed;
 pub use self::types::ScrapedWebPageInfo;
 
 /// Library Error
