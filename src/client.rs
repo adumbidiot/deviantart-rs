@@ -196,4 +196,26 @@ mod test {
             .expect("failed to check if online");
         assert!(is_online);
     }
+
+    #[tokio::test]
+    async fn scrape_webpage_literature() {
+        let client = Client::new();
+        let scraped_webpage = client
+            .scrape_webpage("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914")
+            .await
+            .expect("failed to scrape webpage");
+        let current_deviation = scraped_webpage
+            .get_current_deviation()
+            .expect("missing current deviation");
+        let text_content = current_deviation
+            .text_content
+            .as_ref()
+            .expect("missing text content");
+        let _markup = text_content
+            .html
+            .get_markup()
+            .expect("missing markup")
+            .expect("failed to parse markup");
+        // dbg!(&markup);
+    }
 }
