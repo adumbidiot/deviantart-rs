@@ -346,7 +346,28 @@ mod test {
     async fn it_works() {
         let client = Client::new();
         let mut cursor = client.search("sun", None);
-        let next_page = cursor.next_page().await.expect("failed to get next page");
-        dbg!(next_page);
+        let results = cursor.next_page().await.expect("failed to get next page");
+        let first = &results.first().expect("no results");
+        eprintln!("using deviation `{}`", first.deviation_id);
+
+        let url = first
+            .get_download_url()
+            .or_else(|| first.get_fullview_url())
+            .expect("failed to find download url");
+        eprintln!("downloading `{url}`...");
+        let bytes = client
+            .client
+            .get(url)
+            .send()
+            .await
+            .expect("failed to send")
+            .error_for_status()
+            .expect("bad status")
+            .bytes()
+            .await
+            .expect("failed to buffer bytes");
+
+        std::fs::write("test.jpg", &bytes).expect("failed to write to file");
+        let _results = cursor.next_page().await.expect("failed to get next page");
     }
 }
