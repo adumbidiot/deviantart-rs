@@ -1,9 +1,9 @@
 /// The `Deviation` type.
-mod deviation;
+pub mod deviation;
 /// The `OEmbed` type
-mod oembed;
+pub mod oembed;
 /// The `ScrapedWebPageInfo` type.
-mod scraped_webpage_info;
+pub mod scraped_webpage_info;
 
 pub use self::deviation::Deviation;
 pub use self::oembed::OEmbed;

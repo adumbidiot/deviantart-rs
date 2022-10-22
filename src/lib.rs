@@ -1,7 +1,7 @@
 /// The client
 mod client;
 /// API types
-mod types;
+pub mod types;
 
 pub use self::client::Client;
 pub use self::types::Deviation;
@@ -23,13 +23,13 @@ pub enum Error {
     #[error(transparent)]
     TokioJoin(#[from] tokio::task::JoinError),
 
-    /// Missing the InitialState variable
-    #[error("missing initial state")]
-    MissingInitialState,
-
     /// Json failed to parse
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+
+    /// A scraped web page was invalid
+    #[error("invalid scraped webpage")]
+    InvalidScrapedWebPage(#[from] self::types::scraped_webpage_info::FromHtmlStrError),
 }
 
 // TODO:

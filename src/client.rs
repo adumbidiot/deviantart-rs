@@ -56,11 +56,6 @@ impl Client {
 
     /// Scrape a webpage for info.
     pub async fn scrape_webpage(&self, url: &str) -> Result<ScrapedWebPageInfo, Error> {
-        static REGEX: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r#"window\.__INITIAL_STATE__ = JSON\.parse\("(.*)"\);"#)
-                .expect("invalid `scrape_deviation` regex")
-        });
-
         let text = self
             .client
             .get(url)
@@ -70,22 +65,8 @@ impl Client {
             .text()
             .await?;
 
-        let scraped_webpage = tokio::task::spawn_blocking(move || {
-            let capture = REGEX
-                .captures(&text)
-                .and_then(|captures| captures.get(1))
-                .ok_or(Error::MissingInitialState)?;
-            // TODO: Escape properly
-            let capture = capture
-                .as_str()
-                .replace("\\\"", "\"")
-                .replace("\\'", "'")
-                .replace("\\\\", "\\");
-            let scraped_webpage: ScrapedWebPageInfo = serde_json::from_str(&capture)?;
-
-            Result::<_, Error>::Ok(scraped_webpage)
-        })
-        .await??;
+        let scraped_webpage =
+            tokio::task::spawn_blocking(move || ScrapedWebPageInfo::from_html_str(&text)).await??;
 
         Ok(scraped_webpage)
     }
