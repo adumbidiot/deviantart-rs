@@ -253,24 +253,9 @@ impl SearchCursor {
         }
     }
 
-    /// Get the next page, updating the internal cursor.
-    pub async fn next_page(&mut self) -> Result<Vec<&Deviation>, Error> {
-        let page = self
-            .client
-            .search_raw(&self.query, self.cursor.as_deref())
-            .await?;
-        // Validate before storing
-        if page
-            .streams
-            .as_ref()
-            .ok_or(Error::MissingStreams)?
-            .browse_page_stream
-            .is_none()
-        {
-            return Err(Error::MissingBrowsePageStream);
-        }
-        self.page = Some(page);
-        let page = self.page.as_ref().unwrap();
+    /// Get the current page of deviations
+    pub fn current_deviations(&self) -> Option<Result<Vec<&Deviation>, Error>> {
+        let page = self.page.as_ref()?;
 
         let browse_page_stream = page
             .streams
@@ -279,16 +264,43 @@ impl SearchCursor {
             .browse_page_stream
             .as_ref()
             .unwrap();
-        self.cursor = Some(browse_page_stream.cursor.clone());
 
-        browse_page_stream
-            .items
-            .iter()
-            .map(|id| {
-                page.get_deviation_by_id(*id)
-                    .ok_or(Error::MissingDeviation(*id))
-            })
-            .collect()
+        Some(
+            browse_page_stream
+                .items
+                .iter()
+                .map(|id| {
+                    page.get_deviation_by_id(*id)
+                        .ok_or(Error::MissingDeviation(*id))
+                })
+                .collect(),
+        )
+    }
+
+    /// Get the next page, updating the internal cursor.
+    pub async fn next_page(&mut self) -> Result<(), Error> {
+        let page = self
+            .client
+            .search_raw(&self.query, self.cursor.as_deref())
+            .await?;
+        // Validate before storing
+        match page
+            .streams
+            .as_ref()
+            .ok_or(Error::MissingStreams)?
+            .browse_page_stream
+            .as_ref()
+        {
+            Some(browse_page_stream) => {
+                self.cursor = Some(browse_page_stream.cursor.clone());
+            }
+            None => {
+                return Err(Error::MissingBrowsePageStream);
+            }
+        }
+        self.page = Some(page);
+
+        Ok(())
     }
 }
 
@@ -378,8 +390,15 @@ mod test {
     #[tokio::test]
     async fn it_works() {
         let client = Client::new();
-        let mut cursor = client.search("sun", None);
-        let results = cursor.next_page().await.expect("failed to get next page");
+        let mut search_cursor = client.search("sun", None);
+        search_cursor
+            .next_page()
+            .await
+            .expect("failed to get next page");
+        let results = search_cursor
+            .current_deviations()
+            .expect("missing page")
+            .expect("failed to look up deviations");
         let first = &results.first().expect("no results");
 
         let url = first
@@ -399,6 +418,13 @@ mod test {
             .expect("failed to buffer bytes");
 
         std::fs::write("test.jpg", &bytes).expect("failed to write to file");
-        let _results = cursor.next_page().await.expect("failed to get next page");
+        search_cursor
+            .next_page()
+            .await
+            .expect("failed to get next page");
+        let _results = search_cursor
+            .current_deviations()
+            .expect("missing page")
+            .expect("failed to look up deviations");
     }
 }

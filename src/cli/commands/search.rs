@@ -31,7 +31,13 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
     let results = search_cursor
         .next_page()
         .await
-        .with_context(|| format!("failed to search for '{}'", &options.query))?;
+        .with_context(|| format!("failed to search for '{}'", &options.query))
+        .and_then(|_| {
+            search_cursor
+                .current_deviations()
+                .context("missing page")?
+                .context("failed to look up deviations")
+        })?;
 
     if results.is_empty() {
         println!("no results for '{}'", &options.query);
