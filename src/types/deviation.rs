@@ -138,7 +138,8 @@ impl Deviation {
             let url = self
                 .media
                 .get_gif_media_type()
-                .and_then(|media_type| media_type.b.as_ref().or(self.media.base_uri.as_ref()))?;
+                .and_then(|media_type| media_type.b.as_ref())
+                .or(self.media.base_uri.as_ref())?;
             Path::new(url.as_str()).extension()?.to_str()
         } else if self.is_literature() {
             None
