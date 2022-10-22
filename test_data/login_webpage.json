@@ -1,0 +1,252 @@
+{
+    "login": {
+        "username": "",
+        "password": "",
+        "showCaptcha": false,
+        "remember": true,
+        "usernameInvalid": false,
+        "passwordInvalid": false,
+        "generalError": "",
+        "errorType": "",
+        "tfaVerificationCodeInvalid": false,
+        "tfaRecoveryCodeInvalid": false,
+        "hydrated": true
+    },
+    "forgot": {
+        "username": "",
+        "emailSent": false,
+        "hydrated": true
+    },
+    "join": {
+        "username": "",
+        "password": "",
+        "password2": "",
+        "email": "",
+        "email2": "",
+        "step": 0,
+        "attemptedSubmit": false,
+        "dobYear": null,
+        "dobMonth": null,
+        "dobDay": null,
+        "usernameFetching": false,
+        "passwordWeaknesses": [],
+        "passwordStrength": null,
+        "showUsernameAvailable": false,
+        "usernameError": null,
+        "passwordError": null,
+        "password2Error": null,
+        "emailError": null,
+        "email2Error": null,
+        "dobError": null,
+        "generalError": "",
+        "editMode": false,
+        "originalUsername": "anonymous",
+        "hydrated": true
+    },
+    "topic": {
+        "suggested": [],
+        "history": [],
+        "selections": [],
+        "count": 0,
+        "selected": 0,
+        "hydrated": true
+    },
+    "oauth": {},
+    "authMode": "unknown",
+    "resetPassword": {
+        "hydrated": true
+    },
+    "params": {
+        "isOauth": false,
+        "oauth": {}
+    },
+    "rootPath": "",
+    "cardImage": "https://st.deviantart.net/eclipse/sisu/image-8-626318567.png",
+    "cardDeviation": {
+        "deviationId": 626318567,
+        "type": "image",
+        "typeId": 1,
+        "printId": null,
+        "url": "https://www.deviantart.com/endprocess83/art/Foil-II-626318567",
+        "title": "Foil II",
+        "isJournal": false,
+        "isVideo": false,
+        "isPurchasable": false,
+        "isFavouritable": false,
+        "publishedTime": "2016-08-05T18:28:37-0700",
+        "isTextEditable": false,
+        "legacyTextEditUrl": null,
+        "isShareable": true,
+        "isCommentable": true,
+        "isFavourited": false,
+        "isDeleted": false,
+        "isMature": false,
+        "isDownloadable": false,
+        "isAntisocial": false,
+        "isBlocked": false,
+        "isPublished": true,
+        "isDailyDeviation": false,
+        "hasPrivateComments": false,
+        "blockReasons": [],
+        "author": {
+            "userId": 23430675,
+            "useridUuid": "d4dbc112-7498-4e6f-bc19-b75faf7e09ee",
+            "username": "endprocess83",
+            "usericon": "https://a.deviantart.net/avatars-big/e/n/endprocess83.png?1",
+            "type": "regular",
+            "isWatching": false,
+            "isNewDeviant": false
+        },
+        "stats": {
+            "comments": 3,
+            "favourites": 16
+        },
+        "media": {
+            "baseUri": "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/d4dbc112-7498-4e6f-bc19-b75faf7e09ee/dacw6hz-f3bfc2c3-f2f2-4eaf-8e5b-ee43d33faca2.jpg",
+            "prettyName": "foil_ii_by_endprocess83_dacw6hz",
+            "token": ["eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9MTUwMCIsInBhdGgiOiJcL2ZcL2Q0ZGJjMTEyLTc0OTgtNGU2Zi1iYzE5LWI3NWZhZjdlMDllZVwvZGFjdzZoei1mM2JmYzJjMy1mMmYyLTRlYWYtOGU1Yi1lZTQzZDMzZmFjYTIuanBnIiwid2lkdGgiOiI8PTEwMDAifV1dLCJhdWQiOlsidXJuOnNlcnZpY2U6aW1hZ2Uub3BlcmF0aW9ucyJdfQ.sePdbFHnCgRR-dN_usDQZ9zVVs18FRfOXjN01gwfoW0", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcL2Q0ZGJjMTEyLTc0OTgtNGU2Zi1iYzE5LWI3NWZhZjdlMDllZVwvZGFjdzZoei1mM2JmYzJjMy1mMmYyLTRlYWYtOGU1Yi1lZTQzZDMzZmFjYTIuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.EMDnbgw9GON5TykimvAU-MxvM2kgO9WQLT-XcJJBG7k"],
+            "types": [{
+                    "t": "150",
+                    "r": 0,
+                    "c": "v1/fit/w_150,h_150,q_70,strp/<prettyName>-150.jpg",
+                    "h": 150,
+                    "w": 100
+                }, {
+                    "t": "200H",
+                    "r": 0,
+                    "c": "v1/fill/w_133,h_200,q_70,strp/<prettyName>-200h.jpg",
+                    "h": 200,
+                    "w": 133
+                }, {
+                    "t": "300W",
+                    "r": 0,
+                    "c": "v1/fit/w_300,h_900,q_70,strp/<prettyName>-300w.jpg",
+                    "h": 450,
+                    "w": 300
+                }, {
+                    "t": "250T",
+                    "r": 0,
+                    "c": "v1/crop/w_167,h_250,x_0,y_0,scl_0.167,q_70,strp/<prettyName>-250t.jpg",
+                    "h": 250,
+                    "w": 167
+                }, {
+                    "t": "350T",
+                    "r": 0,
+                    "c": "v1/fill/w_233,h_350,q_70,strp/<prettyName>-350t.jpg",
+                    "h": 350,
+                    "w": 233
+                }, {
+                    "t": "400T",
+                    "r": 0,
+                    "c": "v1/crop/w_267,h_400,x_0,y_0,scl_0.267,q_70,strp/<prettyName>-400t.jpg",
+                    "h": 400,
+                    "w": 267
+                }, {
+                    "t": "preview",
+                    "r": 0,
+                    "c": "v1/fill/w_730,h_1095,q_70,strp/<prettyName>-pre.jpg",
+                    "h": 1095,
+                    "w": 730,
+                    "f": 1188305
+                }, {
+                    "t": "social_preview",
+                    "r": 0,
+                    "c": "v1/fill/w_730,h_1095,q_70,strp/<prettyName>-pre.jpg",
+                    "h": 1095,
+                    "w": 730
+                }, {
+                    "t": "fullview",
+                    "r": 1,
+                    "h": 1500,
+                    "w": 1000,
+                    "f": 1188305
+                }
+            ]
+        }
+    },
+    "requestId": "625m09d5d677317c83de3585b1b5ac055922",
+    "referer": "https://www.deviantart.com",
+    "baseDaUrl": "https://www.deviantart.com",
+    "csrfToken": "0KcURmR2QPx91Wyv.qt6ep2.wv4vEr9EP3WGAnuimXg3a0Qks86x4QHEhHaBz1IwkPM",
+    "isMobile": false,
+    "isDebug": false,
+    "isTestEnv": false,
+    "recaptchaSiteKey": "6LerMCgUAAAAAJwyPAdq3nnE1i8gLm5szvaSDAmw",
+    "googleClientId": "898028592705-pp0rti85qbci0u70vuplskmv7a5v36v4.apps.googleusercontent.com",
+    "facebookAppId": "1463772337211057",
+    "environmentType": "prod",
+    "isOauthError": false,
+    "flags": {
+        "profile_post_feed": true,
+        "dyw_remove_recommendations": true,
+        "account_eclipse": true,
+        "hook_form": true,
+        "actionbar_button_refactor": true
+    },
+    "@@publicSession": {
+        "isLoggedIn": false,
+        "isMobile": false,
+        "isVerified": false,
+        "csrfToken": "UTod-qVdQUEIp0CG.qt6ep2.m4_gzqg6P-uaqnQATU38OD7NCr84SC3W892yAy39Keo",
+        "counts": {
+            "feedback": 0,
+            "watch": 0,
+            "notes": 0,
+            "points": 0,
+            "fragments": 0,
+            "cart": 0
+        },
+        "user": {
+            "userId": 0,
+            "useridUuid": "",
+            "username": "anonymous",
+            "usericon": "https://st.deviantart.net/userprofiles/user-avatar-default.png",
+            "usericonDefault": true,
+            "type": "regular",
+            "details": {}
+        },
+        "useridUuid": "",
+        "biClientId": "ee951264-89a5-0236-ff0e-21ca1808a3e3",
+        "biClientIdSigned": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJiaUNsaWVudElkIjoiZWU5NTEyNjQtODlhNS0wMjM2LWZmMGUtMjFjYTE4MDhhM2UzIiwidHMiOjE2MjExMjg0MjJ9.hXaSK1KCy_KvXER8-_7HMQRozeSx7usFS9pf3ORaJTg",
+        "showMatureContent": false,
+        "theme": "dark",
+        "requestId": "625m09d5d677317c83de3585b1b5ac055922",
+        "hasCoreMembership": false,
+        "hasWixPortfolio": false,
+        "hasJoinedWithEclipse": false,
+        "commentsOrder": "newest",
+        "seo": {
+            "title": "DeviantArt - Discover The Largest Online Art Gallery and Community",
+            "description": "DeviantArt is the world's largest online social community for artists and art enthusiasts, allowing people to connect through the creation and sharing of art.",
+            "canonical": "https://www.deviantart.com/users/login",
+            "socialThumbSrc": ""
+        },
+        "device": {
+            "isMobile": false,
+            "isMobileDevice": false,
+            "isTablet": false,
+            "supportsWebp": true,
+            "supportsLazy": true
+        },
+        "pageSize": 24,
+        "deviationViewMode": "regular",
+        "chat": {
+            "online": false,
+            "muted": false,
+            "contactPermissions": "none",
+            "muteSound": false
+        },
+        "hasAcceptedCookies": false,
+        "cookiePrivacyRequired": false,
+        "cookiePrivacySettings": {
+            "functional": false,
+            "analytics": false,
+            "marketing": false
+        }
+    },
+    "@@config": {
+        "csrfToken": "UTod-qVdQUEIp0CG.qt6ep2.m4_gzqg6P-uaqnQATU38OD7NCr84SC3W892yAy39Keo",
+        "sharedApiBasePath": "/_napi/da-sisu/shared_api"
+    },
+    "@@modals": []
+}
