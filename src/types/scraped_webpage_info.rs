@@ -117,6 +117,15 @@ impl ScrapedWebPageInfo {
         let mut key_buffer = itoa::Buffer::new();
         self.entities.as_ref()?.deviation.get(key_buffer.format(id))
     }
+
+    /// Take a deviation by id, if it exists
+    pub fn take_deviation_by_id(&mut self, id: u64) -> Option<Deviation> {
+        let mut key_buffer = itoa::Buffer::new();
+        self.entities
+            .as_mut()?
+            .deviation
+            .remove(key_buffer.format(id))
+    }
 }
 
 /// ?

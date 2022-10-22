@@ -277,6 +277,30 @@ impl SearchCursor {
         )
     }
 
+    /// Take the current page of deviations
+    pub fn take_current_deviations(&mut self) -> Option<Result<Vec<Deviation>, Error>> {
+        let mut page = self.page.take()?;
+
+        let browse_page_stream = page
+            .streams
+            .as_mut()
+            .unwrap()
+            .browse_page_stream
+            .as_mut()
+            .unwrap();
+
+        let items = std::mem::take(&mut browse_page_stream.items);
+        Some(
+            items
+                .iter()
+                .map(|id| {
+                    page.take_deviation_by_id(*id)
+                        .ok_or(Error::MissingDeviation(*id))
+                })
+                .collect(),
+        )
+    }
+
     /// Get the next page, updating the internal cursor.
     pub async fn next_page(&mut self) -> Result<(), Error> {
         let page = self
