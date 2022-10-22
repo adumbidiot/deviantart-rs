@@ -60,7 +60,7 @@ pub enum Error {
 
 /// A wrapper over a `Box<dyn std::error::Error + Send + Sync + 'static>`.
 #[derive(Debug)]
-pub struct WrapBoxError(Box<dyn std::error::Error + Send + Sync + 'static>);
+pub struct WrapBoxError(pub Box<dyn std::error::Error + Send + Sync + 'static>);
 
 impl std::fmt::Display for WrapBoxError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
