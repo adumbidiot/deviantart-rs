@@ -12,7 +12,7 @@ required-features = [ "cli" ]
 [dependencies]
 itoa = "1.0.2"
 once_cell = { version = "1.16.0", default-features = false }
-regex = "1.6.0"
+regex = "1.7.0"
 reqwest = { version = "0.11.11", default-features = false, features = [ "cookies", "gzip", "json" ] }
 reqwest_cookie_store = "0.4.0"
 serde = { version = "1.0.140", features = [ "derive" ] }
