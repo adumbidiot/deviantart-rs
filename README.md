@@ -10,6 +10,7 @@ In order to run successfully, login credentials should be placed in a `config.js
     "password": "PASSWORD"
 }
 ```
+Alternatively, these credentials may be provided with the `DEVIANTART_RS_USERNAME` and `DEVIANTART_RS_PASSWORD` environment variables.
 
 ## References
  * https://www.deviantart.com/developers/
