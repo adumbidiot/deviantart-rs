@@ -427,6 +427,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn scrape_stash_info_works() {
         let client = Client::new();
         let url = "https://sta.sh/02bhirtp3iwq";
@@ -438,6 +439,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn it_works() {
         let client = Client::new();
         let mut search_cursor = client.search("sun", None);
