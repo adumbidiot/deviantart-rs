@@ -68,3 +68,6 @@ jobs:
         
       - name: Run Ignored Tests
         run: cargo test --all --verbose -- --ignored
+        env:
+          DEVIANTART_RS_USERNAME: ${{ secrets.DEVIANTART_RS_USERNAME }}
+          DEVIANTART_RS_PASSWORD: ${{ secrets.DEVIANTART_RS_PASSWORD }}
