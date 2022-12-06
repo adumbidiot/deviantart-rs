@@ -339,13 +339,38 @@ mod test {
     }
 
     impl Config {
-        fn from_path(path: &str) -> Config {
-            let file = std::fs::read(path).expect("failed to read config");
-            serde_json::from_reader(file.as_slice()).expect("failed to parse config")
+        fn from_path(path: &str) -> Option<Config> {
+            let file = match std::fs::read(path) {
+                Ok(file) => file,
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                    return None;
+                }
+                Err(error) => panic!("failed to read file: {error}"),
+            };
+            let config = serde_json::from_reader(file.as_slice()).expect("failed to parse config");
+            Some(config)
+        }
+
+        fn from_env() -> Option<Self> {
+            let username = std::env::var_os("DEVIANTART_RS_USERNAME")?
+                .into_string()
+                .expect("invalid `DEVIANTART_RS_USERNAME`");
+            let password = std::env::var_os("DEVIANTART_RS_PASSWORD")?
+                .into_string()
+                .expect("invalid `DEVIANTART_RS_PASSWORD`");
+
+            Some(Self { username, password })
+        }
+
+        fn from_any(path: &str) -> Self {
+            Self::from_env()
+                .or_else(|| Self::from_path(path))
+                .expect("failed to load config from env or path")
         }
     }
 
     #[tokio::test]
+    #[ignore]
     async fn scrape_deviation() {
         let client = Client::new();
         let _scraped_webpage = client
@@ -357,7 +382,7 @@ mod test {
     #[tokio::test]
     #[ignore]
     async fn sign_in_works() {
-        let config: Config = Config::from_path("config.json");
+        let config: Config = Config::from_any("config.json");
 
         let client = Client::new();
         client
@@ -372,6 +397,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn scrape_webpage_literature() {
         let client = Client::new();
         let scraped_webpage = client
@@ -401,6 +427,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn scrape_stash_info_works() {
         let client = Client::new();
         let url = "https://sta.sh/02bhirtp3iwq";
@@ -412,6 +439,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn it_works() {
         let client = Client::new();
         let mut search_cursor = client.search("sun", None);
