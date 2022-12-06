@@ -370,6 +370,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn scrape_deviation() {
         let client = Client::new();
         let _scraped_webpage = client
@@ -396,6 +397,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn scrape_webpage_literature() {
         let client = Client::new();
         let scraped_webpage = client

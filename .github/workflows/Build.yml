@@ -63,11 +63,11 @@ jobs:
       - name: Build CLI
         run: cargo build --verbose --features=cli
         
-      # - name: Run Tests
-      #   run: cargo test --all --verbose
+      - name: Run Tests
+        run: cargo test --all --verbose
         
-      - name: Run Ignored Tests
-        run: cargo test --all --verbose -- --ignored
-        env:
-          DEVIANTART_RS_USERNAME: ${{ secrets.DEVIANTART_RS_USERNAME }}
-          DEVIANTART_RS_PASSWORD: ${{ secrets.DEVIANTART_RS_PASSWORD }}
+      # - name: Run Ignored Tests
+      #   run: cargo test --all --verbose -- --ignored
+      #   env:
+      #     DEVIANTART_RS_USERNAME: ${{ secrets.DEVIANTART_RS_USERNAME }}
+      #     DEVIANTART_RS_PASSWORD: ${{ secrets.DEVIANTART_RS_PASSWORD }}
