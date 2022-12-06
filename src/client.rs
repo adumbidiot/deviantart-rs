@@ -11,6 +11,11 @@ use std::sync::Arc;
 use url::Url;
 
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36";
+static ACCEPT_LANGUAGE_VALUE: HeaderValue = HeaderValue::from_static("en,en-US;q=0,5");
+static ACCEPT_VALUE: HeaderValue = HeaderValue::from_static("*/*");
+static REFERER_VALUE: HeaderValue = HeaderValue::from_static("https://www.deviantart.com/");
+
+const LOGIN_URL: &str = "https://www.deviantart.com/users/login";
 
 /// A DeviantArt Client
 #[derive(Debug, Clone)]
@@ -33,13 +38,10 @@ impl Client {
         let mut default_headers = HeaderMap::new();
         default_headers.insert(
             reqwest::header::ACCEPT_LANGUAGE,
-            HeaderValue::from_static("en,en-US;q=0,5"),
+            ACCEPT_LANGUAGE_VALUE.clone(),
         );
-        default_headers.insert(reqwest::header::ACCEPT, HeaderValue::from_static("*/*"));
-        default_headers.insert(
-            reqwest::header::REFERER,
-            HeaderValue::from_static("https://www.deviantart.com/"),
-        );
+        default_headers.insert(reqwest::header::ACCEPT, ACCEPT_VALUE.clone());
+        default_headers.insert(reqwest::header::REFERER, REFERER_VALUE.clone());
 
         let cookie_store = Arc::new(CookieStoreMutex::new(Default::default()));
         let client = reqwest::Client::builder()
@@ -130,9 +132,7 @@ impl Client {
             }
         }
 
-        let scraped_webpage = self
-            .scrape_webpage("https://www.deviantart.com/users/login")
-            .await?;
+        let scraped_webpage = self.scrape_webpage(LOGIN_URL).await?;
         let res = self
             .client
             .post("https://www.deviantart.com/_sisu/do/signin")
