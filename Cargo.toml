@@ -31,7 +31,7 @@ toml = { version = "0.5.9", features = [ "preserve_order" ], optional = true }
 tokio = { version = "1.22.0", features = [ "macros", "fs" ] }
 
 [features]
-default = [ "reqwest/default-tls" ]
+default = [ "rustls-tls" ]
 
 native-tls = [ "reqwest/native-tls" ]
 rustls-tls = [ "reqwest/rustls-tls" ]
