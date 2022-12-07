@@ -13,14 +13,17 @@ use url::Url;
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36";
 static ACCEPT_LANGUAGE_VALUE: HeaderValue = HeaderValue::from_static("en,en-US;q=0,5");
 static ACCEPT_VALUE: HeaderValue = HeaderValue::from_static("*/*");
-static REFERER_VALUE: HeaderValue = HeaderValue::from_static("https://www.deviantart.com/");
+static REFERER_VALUE: HeaderValue = HeaderValue::from_static(HOME_URL);
 
+const HOME_URL: &str = "https://www.deviantart.com/";
 const LOGIN_URL: &str = "https://www.deviantart.com/users/login";
 
 /// A DeviantArt Client
 #[derive(Debug, Clone)]
 pub struct Client {
-    /// The inner http client. You probably shouldn't touch this.
+    /// The inner http client.
+    ///
+    /// You probably shouldn't touch this.
     pub client: reqwest::Client,
 
     /// The cookie store.
@@ -137,7 +140,7 @@ impl Client {
             .client
             .post("https://www.deviantart.com/_sisu/do/signin")
             .form(&[
-                ("referer", "https://www.deviantart.com/"),
+                ("referer", HOME_URL),
                 ("csrf_token", &scraped_webpage.config.csrf_token),
                 ("username", username),
                 ("password", password),
@@ -160,10 +163,7 @@ impl Client {
 
     /// Run a GET request on the home page and check if the user is logged in
     pub async fn is_logged_in_online(&self) -> Result<bool, Error> {
-        Ok(self
-            .scrape_webpage("https://www.deviantart.com/")
-            .await?
-            .is_logged_in())
+        Ok(self.scrape_webpage(HOME_URL).await?.is_logged_in())
     }
 
     /// OEmbed API
