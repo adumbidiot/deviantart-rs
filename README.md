@@ -2,8 +2,8 @@
 A library to interact with https://deviantart.com. It tries to uses scraping because the official api is useless.
 
 ## Testing
-Tests are run with `cargo test`. 
-In order to run successfully, login credentials should be placed in a `config.json` file with the following format:
+Tests are run with `cargo test` from the top folder. 
+In order to run successfully, login credentials should be placed in a `config.json` file in the top folder with the following format:
 ```json
 {
     "username": "USERNAME",
