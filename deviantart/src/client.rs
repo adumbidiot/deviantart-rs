@@ -332,6 +332,11 @@ impl SearchCursor {
 mod test {
     use super::*;
 
+    /// The default test config path
+    ///
+    /// Update this if this crate is moved to a different directory relative to the workspace Cargo.toml.
+    const DEFAULT_CONFIG_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../", "config.json");
+
     #[derive(serde::Deserialize)]
     struct Config {
         username: String,
@@ -382,7 +387,7 @@ mod test {
     #[tokio::test]
     #[ignore]
     async fn sign_in_works() {
-        let config: Config = Config::from_any("config.json");
+        let config: Config = Config::from_any(dbg!(DEFAULT_CONFIG_PATH));
 
         let client = Client::new();
         client
