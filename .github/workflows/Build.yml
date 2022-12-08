@@ -58,16 +58,13 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         
       - name: Build
-        run: cargo build --verbose
-        
-      - name: Build CLI
-        run: cargo build --verbose --features=cli
+        run: cargo build --workspace --verbose
         
       - name: Run Tests
-        run: cargo test --all --verbose
+        run: cargo test --workspace --verbose
         
       # - name: Run Ignored Tests
-      #   run: cargo test --all --verbose -- --ignored
+      #   run: cargo test --workspace --verbose -- --ignored
       #   env:
       #     DEVIANTART_RS_USERNAME: ${{ secrets.DEVIANTART_RS_USERNAME }}
       #     DEVIANTART_RS_PASSWORD: ${{ secrets.DEVIANTART_RS_PASSWORD }}
