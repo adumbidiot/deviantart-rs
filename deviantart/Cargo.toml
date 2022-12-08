@@ -4,11 +4,6 @@ version = "0.0.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
-[[bin]]
-name = "deviantart"
-path = "src/cli/main.rs"
-required-features = [ "cli" ]
-
 [dependencies]
 itoa = "1.0.4"
 once_cell = { version = "1.16.0", default-features = false }
