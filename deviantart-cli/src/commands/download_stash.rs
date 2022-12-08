@@ -1,10 +1,7 @@
 use crate::util::sanitize_path;
-use anyhow::bail;
 use anyhow::Context;
 use std::path::Path;
 use tokio::fs::File;
-use tokio::io::AsyncWriteExt;
-use tokio::io::BufWriter;
 
 #[derive(argh::FromArgs)]
 #[argh(
@@ -34,36 +31,38 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
         .get_best_size()
         .context("missing film sizes")?;
 
-    println!(
-        "Best Film Size: {} x {}",
-        best_film_size.width, best_film_size.height
-    );
+    let best_width = best_film_size.width;
+    let best_height = best_film_size.height;
+    println!("Best Film Size: {best_width} x {best_height}");
 
     let extension = Path::new(best_film_size.src.path())
         .extension()
         .and_then(|ext| ext.to_str())
         .context("missing extension")?;
 
-    let filename = sanitize_path(&format!(
-        "{}-{}.{}",
-        oembed_data.title, scraped_stash_info.deviationid, extension
-    ));
-    println!("Out Path: {}", filename);
-    if Path::new(&filename).exists() {
-        bail!("file already exists");
+    let title = oembed_data.title;
+    let deviation_id = scraped_stash_info.deviationid;
+    let file_name = format!("{title}-{deviation_id}.{extension}");
+    let file_name = sanitize_path(&file_name);
+    println!("Out Path: {file_name}");
+
+    match tokio::fs::metadata(&file_name).await {
+        Ok(_metadata) => {
+            println!("file already exists");
+            return Ok(());
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            // Pass and download
+        }
+        Err(e) => {
+            return Err(e).context("failed to get metadata");
+        }
     }
 
-    let mut res = client
-        .client
-        .get(best_film_size.src.as_str())
-        .send()
-        .await?
-        .error_for_status()?;
-
-    let mut file = BufWriter::new(File::create(filename).await?);
-    while let Some(chunk) = res.chunk().await? {
-        file.write_all(&chunk).await?;
-    }
+    let mut file = File::create(file_name).await?;
+    nd_util::download_to_file(&client.client, best_film_size.src.as_str(), &mut file)
+        .await
+        .context("failed to download file")?;
 
     Ok(())
 }

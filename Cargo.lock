@@ -199,6 +199,7 @@ dependencies = [
  "argh",
  "deviantart",
  "directories-next",
+ "nd-util",
  "serde",
  "tokio",
  "toml",
@@ -594,6 +595,16 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
+]
+
+[[package]]
+name = "nd-util"
+version = "0.0.0"
+source = "git+https://github.com/nathaniel-daniel/nd-util-rs#e1d2e93da6ad9c67abe10ea2cf94ebec0d34408f"
+dependencies = [
+ "anyhow",
+ "reqwest",
+ "tokio",
 ]
 
 [[package]]
