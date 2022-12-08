@@ -50,7 +50,7 @@ multiple-versions = "warn"
 highlight = "all"
 skip = [
     { name = "idna", version = "0.2.3" },
-    
+    { name = "cookie_store", version = "0.16.1" },
 ]
 
 # Mostly soundness denies since the advisory lacks a section for soundess bugs
