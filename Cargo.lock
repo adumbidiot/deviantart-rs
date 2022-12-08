@@ -179,9 +179,6 @@ dependencies = [
 name = "deviantart"
 version = "0.0.0"
 dependencies = [
- "anyhow",
- "argh",
- "directories-next",
  "itoa",
  "once_cell",
  "regex",
@@ -191,8 +188,20 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tokio",
- "toml",
  "url",
+]
+
+[[package]]
+name = "deviantart-cli"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "argh",
+ "deviantart",
+ "directories-next",
+ "serde",
+ "tokio",
+ "toml",
 ]
 
 [[package]]

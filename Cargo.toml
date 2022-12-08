@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "deviantart",
+    "deviantart-cli"
 ]
 
 [profile.release]

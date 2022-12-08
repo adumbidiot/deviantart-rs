@@ -22,10 +22,7 @@ tokio = { version = "1.23.0", features = [ "rt" ] }
 url = { version = "2.3.1", features = [ "serde" ] }
 
 # Optional
-argh = { version = "0.1.9", optional = true }
-anyhow = { version = "1.0.66", optional = true }
-directories-next = { version = "2.0.0", optional = true }
-toml = { version = "0.5.9", features = [ "preserve_order" ], optional = true }
+
 
 [dev-dependencies]
 tokio = { version = "1.23.0", features = [ "macros", "fs" ] }
@@ -35,12 +32,3 @@ default = [ "rustls-tls" ]
 
 native-tls = [ "reqwest/native-tls" ]
 rustls-tls = [ "reqwest/rustls-tls" ]
-
-cli = [ 
-    "argh",
-    "anyhow",
-    "directories-next",
-    "tokio/fs",
-    "tokio/rt-multi-thread",
-    "toml",
-]
