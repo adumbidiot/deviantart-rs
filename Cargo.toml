@@ -15,10 +15,10 @@ once_cell = { version = "1.16.0", default-features = false }
 regex = "1.7.0"
 reqwest = { version = "0.11.13", default-features = false, features = [ "cookies", "gzip", "json" ] }
 reqwest_cookie_store = "0.5.0"
-serde = { version = "1.0.148", features = [ "derive" ] }
+serde = { version = "1.0.149", features = [ "derive" ] }
 serde_json = "1.0.89"
 thiserror = "1.0.37"
-tokio = { version = "1.22.0", features = [ "rt" ] }
+tokio = { version = "1.23.0", features = [ "rt" ] }
 url = { version = "2.2.2", features = [ "serde" ] }
 
 # Optional
@@ -28,7 +28,7 @@ directories-next = { version = "2.0.0", optional = true }
 toml = { version = "0.5.9", features = [ "preserve_order" ], optional = true }
 
 [dev-dependencies]
-tokio = { version = "1.22.0", features = [ "macros", "fs" ] }
+tokio = { version = "1.23.0", features = [ "macros", "fs" ] }
 
 [features]
 default = [ "rustls-tls" ]
