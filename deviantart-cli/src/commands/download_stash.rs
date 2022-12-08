@@ -1,10 +1,10 @@
-use crate::escape_filename;
+use crate::util::sanitize_path;
+use anyhow::bail;
 use anyhow::Context;
 use std::path::Path;
-use tokio::{
-    fs::File,
-    io::{AsyncWriteExt, BufWriter},
-};
+use tokio::fs::File;
+use tokio::io::AsyncWriteExt;
+use tokio::io::BufWriter;
 
 #[derive(argh::FromArgs)]
 #[argh(
@@ -44,13 +44,13 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
         .and_then(|ext| ext.to_str())
         .context("missing extension")?;
 
-    let filename = escape_filename(&format!(
+    let filename = sanitize_path(&format!(
         "{}-{}.{}",
         oembed_data.title, scraped_stash_info.deviationid, extension
     ));
     println!("Out Path: {}", filename);
     if Path::new(&filename).exists() {
-        anyhow::bail!("file already exists");
+        bail!("file already exists");
     }
 
     let mut res = client

@@ -1,4 +1,6 @@
-use crate::{escape_filename, load_config_cli, try_signin_cli};
+use crate::load_config_cli;
+use crate::try_signin_cli;
+use crate::util::sanitize_path;
 use anyhow::bail;
 use anyhow::Context;
 use std::{fmt::Write as _, path::Path};
@@ -96,7 +98,7 @@ async fn download_literature_cli(current_deviation: &deviantart::Deviation) -> a
         .context("deviation is missing markup")?
         .context("failed to parse markup");
 
-    let filename = escape_filename(&format!(
+    let filename = sanitize_path(&format!(
         "{}-{}.html",
         current_deviation.title, current_deviation.deviation_id
     ));
@@ -172,7 +174,7 @@ async fn download_image_cli(
     let extension = current_deviation
         .get_extension()
         .context("could not determine image extension")?;
-    let filename = escape_filename(&format!(
+    let filename = sanitize_path(&format!(
         "{}-{}.{}",
         current_deviation.title, current_deviation.deviation_id, extension
     ));
@@ -218,7 +220,7 @@ async fn download_film_cli(
     let extension = current_deviation
         .get_extension()
         .context("could not determine video extension")?;
-    let filename = escape_filename(&format!(
+    let filename = sanitize_path(&format!(
         "{}-{}.{}",
         current_deviation.title, current_deviation.deviation_id, extension
     ));

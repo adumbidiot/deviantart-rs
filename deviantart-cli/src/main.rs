@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+pub mod util;
 
 use self::config::Config;
 use anyhow::bail;
@@ -136,16 +137,4 @@ async fn save_cookie_jar(client: &deviantart::Client) -> anyhow::Result<()> {
     client.save_json_cookies(cookie_file).await?;
 
     Ok(())
-}
-
-fn escape_filename(path: &str) -> String {
-    path.chars()
-        .map(|c| {
-            if [':', '?', '/', '|', '*'].contains(&c) {
-                '-'
-            } else {
-                c
-            }
-        })
-        .collect()
 }
