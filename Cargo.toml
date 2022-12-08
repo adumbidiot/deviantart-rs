@@ -10,7 +10,7 @@ path = "src/cli/main.rs"
 required-features = [ "cli" ]
 
 [dependencies]
-itoa = "1.0.2"
+itoa = "1.0.4"
 once_cell = { version = "1.16.0", default-features = false }
 regex = "1.7.0"
 reqwest = { version = "0.11.13", default-features = false, features = [ "cookies", "gzip", "json" ] }
@@ -19,11 +19,11 @@ serde = { version = "1.0.149", features = [ "derive" ] }
 serde_json = "1.0.89"
 thiserror = "1.0.37"
 tokio = { version = "1.23.0", features = [ "rt" ] }
-url = { version = "2.2.2", features = [ "serde" ] }
+url = { version = "2.3.1", features = [ "serde" ] }
 
 # Optional
-argh = { version = "0.1.8", optional = true }
-anyhow = { version = "1.0.58", optional = true }
+argh = { version = "0.1.9", optional = true }
+anyhow = { version = "1.0.66", optional = true }
 directories-next = { version = "2.0.0", optional = true }
 toml = { version = "0.5.9", features = [ "preserve_order" ], optional = true }
 
