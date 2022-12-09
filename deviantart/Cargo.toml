@@ -1,0 +1,26 @@
+[package]
+name = "deviantart"
+version = "0.0.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+itoa = "1.0.4"
+once_cell = { version = "1.16.0", default-features = false }
+regex = "1.7.0"
+reqwest = { version = "0.11.13", default-features = false, features = [ "cookies", "gzip", "json" ] }
+reqwest_cookie_store = "0.5.0"
+serde = { version = "1.0.149", features = [ "derive" ] }
+serde_json = "1.0.89"
+thiserror = "1.0.37"
+tokio = { version = "1.23.0", features = [ "rt" ] }
+url = { version = "2.3.1", features = [ "serde" ] }
+
+[dev-dependencies]
+tokio = { version = "1.23.0", features = [ "macros", "fs" ] }
+
+[features]
+default = [ "rustls-tls" ]
+
+native-tls = [ "reqwest/native-tls" ]
+rustls-tls = [ "reqwest/rustls-tls" ]

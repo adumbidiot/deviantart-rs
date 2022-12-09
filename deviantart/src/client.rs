@@ -11,11 +11,19 @@ use std::sync::Arc;
 use url::Url;
 
 const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36";
+static ACCEPT_LANGUAGE_VALUE: HeaderValue = HeaderValue::from_static("en,en-US;q=0,5");
+static ACCEPT_VALUE: HeaderValue = HeaderValue::from_static("*/*");
+static REFERER_VALUE: HeaderValue = HeaderValue::from_static(HOME_URL);
+
+const HOME_URL: &str = "https://www.deviantart.com/";
+const LOGIN_URL: &str = "https://www.deviantart.com/users/login";
 
 /// A DeviantArt Client
 #[derive(Debug, Clone)]
 pub struct Client {
-    /// The inner http client. You probably shouldn't touch this.
+    /// The inner http client.
+    ///
+    /// You probably shouldn't touch this.
     pub client: reqwest::Client,
 
     /// The cookie store.
@@ -33,13 +41,10 @@ impl Client {
         let mut default_headers = HeaderMap::new();
         default_headers.insert(
             reqwest::header::ACCEPT_LANGUAGE,
-            HeaderValue::from_static("en,en-US;q=0,5"),
+            ACCEPT_LANGUAGE_VALUE.clone(),
         );
-        default_headers.insert(reqwest::header::ACCEPT, HeaderValue::from_static("*/*"));
-        default_headers.insert(
-            reqwest::header::REFERER,
-            HeaderValue::from_static("https://www.deviantart.com/"),
-        );
+        default_headers.insert(reqwest::header::ACCEPT, ACCEPT_VALUE.clone());
+        default_headers.insert(reqwest::header::REFERER, REFERER_VALUE.clone());
 
         let cookie_store = Arc::new(CookieStoreMutex::new(Default::default()));
         let client = reqwest::Client::builder()
@@ -130,14 +135,12 @@ impl Client {
             }
         }
 
-        let scraped_webpage = self
-            .scrape_webpage("https://www.deviantart.com/users/login")
-            .await?;
+        let scraped_webpage = self.scrape_webpage(LOGIN_URL).await?;
         let res = self
             .client
             .post("https://www.deviantart.com/_sisu/do/signin")
             .form(&[
-                ("referer", "https://www.deviantart.com/"),
+                ("referer", HOME_URL),
                 ("csrf_token", &scraped_webpage.config.csrf_token),
                 ("username", username),
                 ("password", password),
@@ -160,10 +163,7 @@ impl Client {
 
     /// Run a GET request on the home page and check if the user is logged in
     pub async fn is_logged_in_online(&self) -> Result<bool, Error> {
-        Ok(self
-            .scrape_webpage("https://www.deviantart.com/")
-            .await?
-            .is_logged_in())
+        Ok(self.scrape_webpage(HOME_URL).await?.is_logged_in())
     }
 
     /// OEmbed API
@@ -332,6 +332,11 @@ impl SearchCursor {
 mod test {
     use super::*;
 
+    /// The default test config path
+    ///
+    /// Update this if this crate is moved to a different directory relative to the workspace Cargo.toml.
+    const DEFAULT_CONFIG_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../", "config.json");
+
     #[derive(serde::Deserialize)]
     struct Config {
         username: String,
@@ -382,7 +387,7 @@ mod test {
     #[tokio::test]
     #[ignore]
     async fn sign_in_works() {
-        let config: Config = Config::from_any("config.json");
+        let config: Config = Config::from_any(dbg!(DEFAULT_CONFIG_PATH));
 
         let client = Client::new();
         client

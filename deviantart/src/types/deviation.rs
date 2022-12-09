@@ -271,7 +271,7 @@ impl MediaType {
 }
 
 /// Text Content for literature
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct TextContext {
     /// Excerpt of text
     pub excerpt: String,
@@ -285,7 +285,7 @@ pub struct TextContext {
 }
 
 /// Text Context html
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Html {
     /// ?
     pub features: String,
@@ -311,7 +311,7 @@ impl Html {
 }
 
 /// Text Context Html Markup
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Markup {
     /// Blocks of marked-up text
     pub blocks: Vec<Block>,
@@ -326,7 +326,7 @@ pub struct Markup {
 }
 
 /// A Markup block
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Block {
     /// ?
     pub data: serde_json::Value,
