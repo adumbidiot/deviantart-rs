@@ -199,6 +199,7 @@ dependencies = [
  "argh",
  "deviantart",
  "directories-next",
+ "nd-util",
  "pikadick-util",
  "serde",
  "tokio",
