@@ -229,13 +229,21 @@ async fn download_image_cli(
     let extension = current_deviation
         .get_extension()
         .context("could not determine image extension")?;
-    let filename = sanitize_path(&format!(
-        "{}-{}.{}",
-        current_deviation.title, current_deviation.deviation_id, extension
-    ));
-    println!("Out Path: {}", filename);
-    if Path::new(&filename).exists() {
-        bail!("file already exists");
+    let title = current_deviation.title.as_str();
+    let deviation_id = current_deviation.deviation_id;
+    let file_name = format!("{title}-{deviation_id}.{extension}",);
+    let file_name = sanitize_path(&file_name);
+    println!("Out Path: {file_name}");
+    match tokio::fs::metadata(&file_name).await {
+        Ok(_metadata) => {
+            println!("file already exists");
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            // Pass and save
+        }
+        Err(e) => {
+            return Err(e).context("failed to get metadata for path");
+        }
     }
 
     let mut url = current_deviation_extended
@@ -252,16 +260,7 @@ async fn download_image_cli(
 
     let url = url.context("failed to select an image url")?;
 
-    let bytes = client
-        .client
-        .get(url.as_str())
-        .send()
-        .await?
-        .error_for_status()?
-        .bytes()
-        .await?;
-
-    tokio::fs::write(filename, bytes).await?;
+    pikadick_util::download_to_path(&client.client, url.as_str(), file_name).await?;
 
     Ok(())
 }
