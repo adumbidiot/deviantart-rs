@@ -4,11 +4,6 @@ use crate::util::sanitize_path;
 use anyhow::bail;
 use anyhow::Context;
 use std::io::Write;
-use std::path::Path;
-use tokio::{
-    fs::File,
-    io::{AsyncWriteExt, BufWriter},
-};
 
 #[derive(argh::FromArgs)]
 #[argh(
@@ -274,30 +269,28 @@ async fn download_film_cli(
     let extension = current_deviation
         .get_extension()
         .context("could not determine video extension")?;
-    let filename = sanitize_path(&format!(
-        "{}-{}.{}",
-        current_deviation.title, current_deviation.deviation_id, extension
-    ));
-    println!("Out Path: {}", filename);
-    if Path::new(&filename).exists() {
-        anyhow::bail!("file already exists");
+    let title = current_deviation.title.as_str();
+    let deviation_id = current_deviation.deviation_id;
+    let file_name = format!("{title}-{deviation_id}.{extension}");
+    let file_name = sanitize_path(&file_name);
+    println!("Out Path: {file_name}");
+    match tokio::fs::metadata(&file_name).await {
+        Ok(_metadata) => {
+            println!("file already exists");
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            // Pass and save
+        }
+        Err(e) => {
+            return Err(e).context("failed to get metadata for path");
+        }
     }
 
     let url = current_deviation
         .get_best_video_url()
         .context("missing video url")?;
 
-    let mut res = client
-        .client
-        .get(url.as_str())
-        .send()
-        .await?
-        .error_for_status()?;
-
-    let mut file = BufWriter::new(File::create(filename).await?);
-    while let Some(chunk) = res.chunk().await? {
-        file.write_all(&chunk).await?;
-    }
+    pikadick_util::download_to_path(&client.client, url.as_str(), file_name).await?;
 
     Ok(())
 }
