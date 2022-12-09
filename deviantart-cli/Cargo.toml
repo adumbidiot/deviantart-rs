@@ -13,7 +13,7 @@ argh = "0.1.9"
 anyhow = "1.0.66"
 deviantart = { path = "../deviantart" }
 directories-next = "2.0.0"
-nd-util = { git = "https://github.com/nathaniel-daniel/nd-util-rs", features = [ "download-to-file" ] }
+pikadick-util = { git = "https://github.com/adumbidiot/pikadick-rs", branch = "small-update-deps", features = [ "download_to_path" ] }
 toml = { version = "0.5.9", features = [ "preserve_order" ] }
 tokio = { version = "1.23.0", features = [ "rt-multi-thread", "fs" ] }
 serde = { version = "1.0.149", features = [ "derive" ] }

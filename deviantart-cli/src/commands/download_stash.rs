@@ -1,7 +1,6 @@
 use crate::util::sanitize_path;
 use anyhow::Context;
 use std::path::Path;
-use tokio::fs::File;
 
 #[derive(argh::FromArgs)]
 #[argh(
@@ -59,10 +58,9 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
         }
     }
 
-    let mut file = File::create(file_name).await?;
-    nd_util::download_to_file(&client.client, best_film_size.src.as_str(), &mut file)
+    pikadick_util::download_to_path(&client.client, best_film_size.src.as_str(), file_name)
         .await
-        .context("failed to download file")?;
+        .context("failed to download path")?;
 
     Ok(())
 }
