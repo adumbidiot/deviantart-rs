@@ -10,7 +10,7 @@ path = "src/main.rs"
 
 [dependencies]
 argh = "0.1.9"
-anyhow = "1.0.66"
+anyhow = "1.0.68"
 deviantart = { path = "../deviantart" }
 directories-next = "2.0.0"
 nd-util = { git = "https://github.com/nathaniel-daniel/nd-util-rs" }
