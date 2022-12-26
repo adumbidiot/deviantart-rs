@@ -649,7 +649,7 @@ dependencies = [
 [[package]]
 name = "nd-util"
 version = "0.0.0"
-source = "git+https://github.com/nathaniel-daniel/nd-util-rs#e1d2e93da6ad9c67abe10ea2cf94ebec0d34408f"
+source = "git+https://github.com/nathaniel-daniel/nd-util-rs#c9e293f7741f70e191f28f03a3ff91d588a1fb90"
 dependencies = [
  "anyhow",
  "reqwest",
