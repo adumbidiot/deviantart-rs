@@ -727,7 +727,7 @@ checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 [[package]]
 name = "pikadick-util"
 version = "0.0.0"
-source = "git+https://github.com/adumbidiot/pikadick-rs?branch=small-update-deps#f238797960113793dd9aa6b5f41ee1a56ba9a035"
+source = "git+https://github.com/adumbidiot/pikadick-rs#6e681ad0498ae2996696ea1b7ed8a926b4cd5ce9"
 dependencies = [
  "anyhow",
  "cfg-if",
