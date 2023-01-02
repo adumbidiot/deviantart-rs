@@ -649,7 +649,7 @@ dependencies = [
 [[package]]
 name = "nd-util"
 version = "0.0.0"
-source = "git+https://github.com/nathaniel-daniel/nd-util-rs#c9e293f7741f70e191f28f03a3ff91d588a1fb90"
+source = "git+https://github.com/nathaniel-daniel/nd-util-rs#d3a87e5e9d9c0f374f109424432c954bf12bcdc4"
 dependencies = [
  "anyhow",
  "reqwest",
@@ -727,7 +727,7 @@ checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 [[package]]
 name = "pikadick-util"
 version = "0.0.0"
-source = "git+https://github.com/adumbidiot/pikadick-rs#6e681ad0498ae2996696ea1b7ed8a926b4cd5ce9"
+source = "git+https://github.com/adumbidiot/pikadick-rs#aaa23f03b4316c711a3b944a2d810e8175701dc7"
 dependencies = [
  "anyhow",
  "cfg-if",
