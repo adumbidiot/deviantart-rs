@@ -23,7 +23,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-lint-cargo-${{ hashFiles('**/Cargo.lock') }}
         
       - name: RustFmt
         run: cargo fmt --all -- --check
@@ -55,7 +55,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-build-cargo-${{ hashFiles('**/Cargo.lock') }}
         
       - name: Build
         run: cargo build --workspace --verbose
