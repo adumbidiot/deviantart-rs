@@ -255,7 +255,7 @@ async fn download_image_cli(
 
     let url = url.context("failed to select an image url")?;
 
-    pikadick_util::download_to_path(&client.client, url.as_str(), file_name).await?;
+    nd_util::download_to_path(&client.client, url.as_str(), file_name).await?;
 
     Ok(())
 }
@@ -291,7 +291,7 @@ async fn download_film_cli(
         .get_best_video_url()
         .context("missing video url")?;
 
-    pikadick_util::download_to_path(&client.client, url.as_str(), file_name).await?;
+    nd_util::download_to_path(&client.client, url.as_str(), file_name).await?;
 
     Ok(())
 }

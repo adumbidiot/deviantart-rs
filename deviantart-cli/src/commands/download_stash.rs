@@ -58,7 +58,7 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
         }
     }
 
-    pikadick_util::download_to_path(&client.client, best_film_size.src.as_str(), file_name)
+    nd_util::download_to_path(&client.client, best_film_size.src.as_str(), file_name)
         .await
         .context("failed to download path")?;
 
