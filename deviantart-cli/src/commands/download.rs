@@ -277,6 +277,7 @@ async fn download_film_cli(
     match tokio::fs::metadata(&file_name).await {
         Ok(_metadata) => {
             println!("file already exists");
+            return Ok(());
         }
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
             // Pass and save
