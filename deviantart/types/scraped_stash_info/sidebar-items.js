@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["FromHtmlStrError","An error that may occur while parsing a [`ScrapedStashInfo`] from a html str."]],"struct":[["Film","Film data from a sta.sh link"],["ScrapedStashInfo","Scraped info from a sta.sh link"],["Size","Film size"]]};

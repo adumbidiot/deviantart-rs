@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["sanitize_path","Sanitize the given path, returning a santized path with only valid chars."]]};

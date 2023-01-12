@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error","Library Error"]],"mod":[["types","API types"]],"struct":[["Client","A DeviantArt Client"],["WrapBoxError","A wrapper over a `Box<dyn std::error::Error + Send + Sync + 'static>`."]]};
