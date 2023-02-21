@@ -43,14 +43,12 @@ license-files = [
 ]
 
 [bans]
-# This crate will have no dependencies in a release native build. 
-# It only needs dependencies for testing and wasm support.
-# Set this to warn only to lessen noise.
 multiple-versions = "warn"
 highlight = "all"
 skip = [
     { name = "idna", version = "0.2.3" },
     { name = "cookie_store", version = "0.16.1" },
+    { name = "base64", version = "0.13.1" },
 ]
 
 deny = []
@@ -59,7 +57,9 @@ deny = []
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = [ "https://github.com/rust-lang/crates.io-index" ]
-allow-git = [
-    "https://github.com/nathaniel-daniel/nd-util-rs",
-    "https://github.com/adumbidiot/pikadick-rs",
+allow-git = []
+
+[sources.allow-org]
+github = [
+    "nathaniel-daniel",
 ]

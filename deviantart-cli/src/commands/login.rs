@@ -20,7 +20,7 @@ pub async fn execute(_client: deviantart::Client, options: Options) -> anyhow::R
     config.password = Some(options.password);
     config.save().await.context("failed to save config")?;
     if let Err(e) = tokio::fs::remove_file(get_cookie_file_path()?).await {
-        eprintln!("Failed to delete old cookie file: {}", e);
+        eprintln!("Failed to delete old cookie file: {e}");
     }
 
     Ok(())
