@@ -67,7 +67,7 @@ async fn try_signin_cli(
     password: Option<&str>,
 ) -> anyhow::Result<()> {
     if let Err(e) = load_cookie_jar(client).await {
-        eprintln!("failed to load cookie jar: {:?}", e);
+        eprintln!("failed to load cookie jar: {e:?}");
     }
 
     if !client
@@ -89,7 +89,7 @@ async fn try_signin_cli(
                     .await
                     .context("failed to save cookies")
                 {
-                    println!("{:?}", e);
+                    println!("{e:?}");
                 }
             }
             (None, Some(_password)) => {
@@ -109,7 +109,7 @@ async fn try_signin_cli(
 
 async fn load_config_cli() -> Config {
     Config::load().await.unwrap_or_else(|e| {
-        println!("failed to load config: {:?}", e);
+        println!("failed to load config: {e:?}");
         Config::new()
     })
 }
