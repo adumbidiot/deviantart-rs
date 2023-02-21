@@ -141,6 +141,7 @@ impl Client {
             .post("https://www.deviantart.com/_sisu/do/signin")
             .form(&[
                 ("referer", HOME_URL),
+                ("referer_type", ""),
                 ("csrf_token", &scraped_webpage.config.csrf_token),
                 ("username", username),
                 ("password", password),
