@@ -10,7 +10,7 @@ once_cell = { version = "1.17.1", default-features = false }
 regex = "1.7.1"
 reqwest = { version = "0.11.14", default-features = false, features = [ "cookies", "gzip", "json" ] }
 reqwest_cookie_store = "0.5.0"
-serde = { version = "1.0.152", features = [ "derive" ] }
+serde = { version = "1.0.153", features = [ "derive" ] }
 serde_json = "1.0.93"
 thiserror = "1.0.38"
 tokio = { version = "1.26.0", features = [ "rt" ] }
