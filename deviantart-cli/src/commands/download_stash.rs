@@ -45,17 +45,12 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
     let file_name = sanitize_path(&file_name);
     println!("Out Path: {file_name}");
 
-    match tokio::fs::metadata(&file_name).await {
-        Ok(_metadata) => {
-            println!("file already exists");
-            return Ok(());
-        }
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            // Pass and download
-        }
-        Err(e) => {
-            return Err(e).context("failed to get metadata");
-        }
+    if tokio::fs::try_exists(&file_name)
+        .await
+        .context("failed to check if file exists")?
+    {
+        println!("file already exists");
+        return Ok(());
     }
 
     nd_util::download_to_path(&client.client, best_film_size.src.as_str(), file_name)
