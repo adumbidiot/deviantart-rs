@@ -48,7 +48,6 @@ highlight = "all"
 skip = [
     { name = "idna", version = "0.2.3" },
     { name = "cookie_store", version = "0.16.1" },
-    { name = "base64", version = "0.13.1" },
 ]
 
 deny = []
