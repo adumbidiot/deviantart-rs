@@ -97,17 +97,12 @@ async fn download_literature_cli(current_deviation: &deviantart::Deviation) -> a
     let file_name = format!("{title}-{deviation_id}.html");
     let file_name = sanitize_path(&file_name);
 
-    match tokio::fs::metadata(&file_name).await {
-        Ok(_metadata) => {
-            println!("file already exists");
-            return Ok(());
-        }
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            // Pass and save
-        }
-        Err(e) => {
-            return Err(e).context("failed to get metadata for path");
-        }
+    if tokio::fs::try_exists(&file_name)
+        .await
+        .context("failed to check if file exists")?
+    {
+        println!("file already exists");
+        return Ok(());
     }
 
     let temp_path = nd_util::with_push_extension(&file_name, "part");
@@ -229,16 +224,12 @@ async fn download_image_cli(
     let file_name = format!("{title}-{deviation_id}.{extension}",);
     let file_name = sanitize_path(&file_name);
     println!("Out Path: {file_name}");
-    match tokio::fs::metadata(&file_name).await {
-        Ok(_metadata) => {
-            println!("file already exists");
-        }
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            // Pass and save
-        }
-        Err(e) => {
-            return Err(e).context("failed to get metadata for path");
-        }
+    if tokio::fs::try_exists(&file_name)
+        .await
+        .context("failed to check if file exists")?
+    {
+        println!("file already exists");
+        return Ok(());
     }
 
     let mut url = current_deviation_extended
@@ -274,17 +265,12 @@ async fn download_film_cli(
     let file_name = format!("{title}-{deviation_id}.{extension}");
     let file_name = sanitize_path(&file_name);
     println!("Out Path: {file_name}");
-    match tokio::fs::metadata(&file_name).await {
-        Ok(_metadata) => {
-            println!("file already exists");
-            return Ok(());
-        }
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-            // Pass and save
-        }
-        Err(e) => {
-            return Err(e).context("failed to get metadata for path");
-        }
+    if tokio::fs::try_exists(&file_name)
+        .await
+        .context("failed to check if file exists")?
+    {
+        println!("file already exists");
+        return Ok(());
     }
 
     let url = current_deviation
