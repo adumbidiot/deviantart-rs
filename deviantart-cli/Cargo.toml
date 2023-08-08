@@ -9,7 +9,7 @@ name = "deviantart"
 path = "src/main.rs"
 
 [dependencies]
-argh = "0.1.10"
+argh = "0.1.11"
 anyhow = "1.0.72"
 deviantart = { path = "../deviantart" }
 directories-next = "2.0.0"
