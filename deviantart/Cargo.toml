@@ -12,7 +12,7 @@ reqwest = { version = "0.11.17", default-features = false, features = [ "cookies
 reqwest_cookie_store = "0.6.0"
 serde = { version = "1.0.183", features = [ "derive" ] }
 serde_json = "1.0.104"
-thiserror = "1.0.44"
+thiserror = "1.0.45"
 tokio = { version = "1.30.0", features = [ "rt" ] }
 url = { version = "2.4.0", features = [ "serde" ] }
 
