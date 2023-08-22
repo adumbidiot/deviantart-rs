@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 itoa = "1.0.9"
 once_cell = { version = "1.18.0", default-features = false }
 regex = "1.9.3"
-reqwest = { version = "0.11.17", default-features = false, features = [ "cookies", "gzip", "json" ] }
+reqwest = { version = "0.11.19", default-features = false, features = [ "cookies", "gzip", "json" ] }
 reqwest_cookie_store = "0.6.0"
 serde = { version = "1.0.183", features = [ "derive" ] }
 serde_json = "1.0.104"
