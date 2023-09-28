@@ -48,6 +48,11 @@ highlight = "all"
 skip = [
     { name = "idna", version = "0.2.3" },
     { name = "cookie_store", version = "0.16.1" },
+    { name = "socket2", version = "0.4.9" },
+    { name = "indexmap", version = "1.9.3" },
+    { name = "idna", version = "0.3.0" },
+    { name = "hashbrown", version = "0.12.3" },
+    { name = "cookie", version = "0.16.2" },
 ]
 
 deny = []
