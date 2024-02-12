@@ -135,24 +135,74 @@ impl Client {
             }
         }
 
-        let scraped_webpage = self.scrape_webpage(LOGIN_URL).await?;
-        let res = self
+        // Initial req to login page.
+        let login_page = self.scrape_webpage(LOGIN_URL).await?;
+        let login_page_csrf_token = login_page
+            .csrf_token
+            .as_deref()
+            .ok_or(Error::MissingField { name: "csrfToken" })?;
+        let login_page_lu_token = login_page
+            .lu_token
+            .as_deref()
+            .ok_or(Error::MissingField { name: "luToken" })?;
+
+        // Get the password input page.
+        // The username and password inputs are on different pages.
+        let password_page_text = self
             .client
-            .post("https://www.deviantart.com/_sisu/do/signin")
+            .post("https://www.deviantart.com/_sisu/do/step2")
             .form(&[
-                ("referer", HOME_URL),
+                ("referer", LOGIN_URL),
                 ("referer_type", ""),
-                ("csrf_token", &scraped_webpage.config.csrf_token),
-                ("username", username),
-                ("password", password),
+                ("csrf_token", login_page_csrf_token),
                 ("challenge", "0"),
+                ("lu_token", login_page_lu_token),
+                ("username", username),
+                ("remember", "on"),
+            ])
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
+        let password_page = tokio::task::spawn_blocking(move || {
+            ScrapedWebPageInfo::from_html_str(&password_page_text)
+        })
+        .await??;
+        let password_page_csrf_token = password_page
+            .csrf_token
+            .as_deref()
+            .ok_or(Error::MissingField { name: "csrfToken" })?;
+        let password_page_lu_token = password_page
+            .lu_token
+            .as_deref()
+            .ok_or(Error::MissingField { name: "luToken" })?;
+        let password_page_lu_token2 = password_page
+            .lu_token2
+            .as_deref()
+            .ok_or(Error::MissingField { name: "luToken2" })?;
+
+        // Submit password
+        let signin_url = "https://www.deviantart.com/_sisu/do/signin";
+        let response = self
+            .client
+            .post(signin_url)
+            .form(&[
+                ("referer", signin_url),
+                ("referer_type", ""),
+                ("csrf_token", password_page_csrf_token),
+                ("challenge", "0"),
+                ("lu_token", password_page_lu_token),
+                ("lu_token2", password_page_lu_token2),
+                ("username", ""),
+                ("password", password),
                 ("remember", "on"),
             ])
             .send()
             .await?
             .error_for_status()?;
 
-        let text = res.text().await?;
+        let text = response.text().await?;
         let scraped_webpage =
             tokio::task::spawn_blocking(move || ScrapedWebPageInfo::from_html_str(&text)).await??;
         if !scraped_webpage.is_logged_in() {
@@ -388,7 +438,7 @@ mod test {
     #[tokio::test]
     #[ignore]
     async fn sign_in_works() {
-        let config: Config = Config::from_any(dbg!(DEFAULT_CONFIG_PATH));
+        let config: Config = Config::from_any(DEFAULT_CONFIG_PATH);
 
         let client = Client::new();
         client
