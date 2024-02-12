@@ -47,7 +47,7 @@ impl Deviation {
     pub fn get_media_url(&self) -> Option<Url> {
         let mut url = self.media.base_uri.as_ref()?.clone();
         url.query_pairs_mut()
-            .append_pair("token", self.media.token.get(0)?);
+            .append_pair("token", self.media.token.first()?);
         Some(url)
     }
 
@@ -79,7 +79,7 @@ impl Deviation {
         // As such, this part is optional.
         // So far, a token is allowed to be missing when the "content" section of the fullview data is missing
         // Correct this if these assumptions are wrong.
-        if let Some(token) = self.media.token.get(0) {
+        if let Some(token) = self.media.token.first() {
             url.query_pairs_mut().append_pair("token", token);
         }
 
@@ -90,7 +90,7 @@ impl Deviation {
     pub fn get_gif_url(&self) -> Option<Url> {
         let mut url = self.media.get_gif_media_type()?.b.clone()?;
         url.query_pairs_mut()
-            .append_pair("token", self.media.token.get(0)?);
+            .append_pair("token", self.media.token.first()?);
         Some(url)
     }
 

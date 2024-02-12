@@ -136,7 +136,7 @@ impl Client {
         }
 
         let scraped_webpage = self.scrape_webpage(LOGIN_URL).await?;
-        let res = self
+        let response = self
             .client
             .post("https://www.deviantart.com/_sisu/do/signin")
             .form(&[
@@ -152,7 +152,7 @@ impl Client {
             .await?
             .error_for_status()?;
 
-        let text = res.text().await?;
+        let text = response.text().await?;
         let scraped_webpage =
             tokio::task::spawn_blocking(move || ScrapedWebPageInfo::from_html_str(&text)).await??;
         if !scraped_webpage.is_logged_in() {
@@ -388,7 +388,7 @@ mod test {
     #[tokio::test]
     #[ignore]
     async fn sign_in_works() {
-        let config: Config = Config::from_any(dbg!(DEFAULT_CONFIG_PATH));
+        let config: Config = Config::from_any(DEFAULT_CONFIG_PATH);
 
         let client = Client::new();
         client
