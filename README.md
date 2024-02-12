@@ -10,9 +10,9 @@ However, some content cannot be accessed without a login.
 #[tokio::main]
 async fn main() {
     let client = deviantart::Client::new();
-    
+
     client
-        .sign_in(&config.username, &config.password)
+        .sign_in("username", "password")
         .await
         .expect("failed to sign in");
 }
