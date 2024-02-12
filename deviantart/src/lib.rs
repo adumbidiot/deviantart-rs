@@ -41,6 +41,13 @@ pub enum Error {
     #[error("sign in failed")]
     SignInFailed,
 
+    /// Missing a field
+    #[error("missing field \"{name}\"")]
+    MissingField {
+        /// The missing field name
+        name: &'static str,
+    },
+
     /// Missing the streams field
     #[error("missing streams")]
     MissingStreams,

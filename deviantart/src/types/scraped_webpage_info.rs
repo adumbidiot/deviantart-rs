@@ -39,6 +39,20 @@ pub struct ScrapedWebPageInfo {
     #[serde(rename = "@@streams")]
     pub streams: Option<Streams>,
 
+    /// Needed for login.
+    ///
+    /// Note that this is a different csrf token from the config struct.
+    #[serde(rename = "csrfToken")]
+    pub csrf_token: Option<Box<str>>,
+
+    /// Needed for login.
+    #[serde(rename = "luToken")]
+    pub lu_token: Option<Box<str>>,
+
+    /// Needed for login.
+    #[serde(rename = "luToken2")]
+    pub lu_token2: Option<Box<str>>,
+
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
