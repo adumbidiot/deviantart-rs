@@ -1,7 +1,6 @@
 use crate::Deviation;
 use crate::Error;
 use crate::OEmbed;
-use crate::ScrapedStashInfo;
 use crate::ScrapedWebPageInfo;
 use crate::WrapBoxError;
 use reqwest::header::HeaderMap;
@@ -229,23 +228,6 @@ impl Client {
             .json()
             .await?;
         Ok(res)
-    }
-
-    /// Scrape a sta.sh link for info
-    pub async fn scrape_stash_info(&self, url: &str) -> Result<ScrapedStashInfo, Error> {
-        let text = self
-            .client
-            .get(url)
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-
-        let scraped_stash =
-            tokio::task::spawn_blocking(move || ScrapedStashInfo::from_html_str(&text)).await??;
-
-        Ok(scraped_stash)
     }
 
     /// Run a search using the low level api
@@ -488,10 +470,13 @@ mod test {
         let client = Client::new();
         let url = "https://sta.sh/02bhirtp3iwq";
         let stash = client
-            .scrape_stash_info(url)
+            .scrape_webpage(url)
             .await
             .expect("failed to scrape stash");
-        assert!(stash.deviationid == 590293385);
+        let current_deviation_id = stash
+            .get_current_deviation_id()
+            .expect("missing current deviation id");
+        assert!(current_deviation_id.as_u64() == Some(590293385));
     }
 
     #[tokio::test]
