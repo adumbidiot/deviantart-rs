@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-itoa = "1.0.10"
+itoa = "1.0.11"
 once_cell = { version = "1.19.0", default-features = false }
 regex = "1.10.3"
 reqwest = { version = "0.12.0", default-features = false, features = [ "cookies", "gzip", "json", "http2" ] }
