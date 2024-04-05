@@ -5,9 +5,6 @@ members = [
     "deviantart-cli"
 ]
 
-[patch.crates-io]
-reqwest_cookie_store = { git = "https://github.com/nathaniel-daniel/reqwest_cookie_store", branch = "reqwest-12" }
-
 [profile.release]
 lto = "fat"
 codegen-units = 1
