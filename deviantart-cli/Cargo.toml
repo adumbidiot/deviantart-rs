@@ -6,7 +6,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 argh = "0.1.12"
-anyhow = "1.0.82"
+anyhow = "1.0.86"
 deviantart = { path = "../deviantart" }
 directories-next = "2.0.0"
 nd-util = { git = "https://github.com/nathaniel-daniel/nd-util-rs", features = [ "download-to-path" ] }
