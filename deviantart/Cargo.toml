@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 itoa = "1.0.11"
 once_cell = { version = "1.19.0", default-features = false }
-regex = "1.10.4"
+regex = "1.10.5"
 reqwest = { version = "0.12.5", default-features = false, features = [ "cookies", "gzip", "json", "http2" ] }
 reqwest_cookie_store = "0.8.0"
 serde = { version = "1.0.203", features = [ "derive" ] }
