@@ -12,4 +12,4 @@ directories-next = "2.0.0"
 nd-util = { git = "https://github.com/nathaniel-daniel/nd-util-rs", features = [ "download-to-path" ] }
 toml = { version = "0.8.14", features = [ "preserve_order" ] }
 tokio = { version = "1.38.0", features = [ "rt-multi-thread", "fs" ] }
-serde = { version = "1.0.203", features = [ "derive" ] }
+serde = { version = "1.0.204", features = [ "derive" ] }
