@@ -62,8 +62,7 @@ impl ScrapedWebPageInfo {
     /// Parse this from a html string
     pub fn from_html_str(input: &str) -> Result<Self, FromHtmlStrError> {
         static REGEX: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r#"window\.__INITIAL_STATE__ = JSON\.parse\("(.*)"\);"#)
-                .expect("invalid `scrape_deviation` regex")
+            Regex::new(r#"window\.__INITIAL_STATE__ = JSON\.parse\("(.*)"\);"#).unwrap()
         });
 
         let capture = REGEX
@@ -268,8 +267,12 @@ pub struct BrowsePageStream {
     #[serde(rename = "hasMore")]
     pub has_more: bool,
 
-    /// deviation ids
-    pub items: Vec<u64>,
+    /// Deviation ids?
+    ///
+    /// Usually, these are integers representing deviation ids.
+    /// In some cases, these are strings of the format "xx-nnnnn",
+    /// where the "xx" part is unknown and the "nnnnn" part is a deviation id.
+    pub items: Vec<serde_json::Value>,
 
     /// The # of items per page
     #[serde(rename = "itemsPerFetch")]

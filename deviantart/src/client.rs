@@ -302,9 +302,13 @@ impl SearchCursor {
             browse_page_stream
                 .items
                 .iter()
+                .filter_map(|id| {
+                    // TODO: Investigate string format more.
+                    id.as_u64()
+                })
                 .map(|id| {
-                    page.get_deviation_by_id(*id)
-                        .ok_or(Error::MissingDeviation(*id))
+                    page.get_deviation_by_id(id)
+                        .ok_or(Error::MissingDeviation(id))
                 })
                 .collect(),
         )
@@ -326,9 +330,13 @@ impl SearchCursor {
         Some(
             items
                 .iter()
+                .filter_map(|id| {
+                    // TODO: Investigate string format more.
+                    id.as_u64()
+                })
                 .map(|id| {
-                    page.take_deviation_by_id(*id)
-                        .ok_or(Error::MissingDeviation(*id))
+                    page.take_deviation_by_id(id)
+                        .ok_or(Error::MissingDeviation(id))
                 })
                 .collect(),
         )
