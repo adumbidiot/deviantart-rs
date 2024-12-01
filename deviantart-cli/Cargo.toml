@@ -6,13 +6,13 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 argh = "0.1.12"
-anyhow = "1.0.92"
+anyhow = "1.0.93"
 deviantart = { path = "../deviantart", default-features = false }
 directories-next = "2.0.0"
 nd-util = { git = "https://github.com/nathaniel-daniel/nd-util-rs", features = [ "download-to-path" ] }
 toml = { version = "0.8.19", features = [ "preserve_order" ] }
-tokio = { version = "1.41.0", features = [ "rt-multi-thread", "fs" ] }
-serde = { version = "1.0.214", features = [ "derive" ] }
+tokio = { version = "1.41.1", features = [ "rt-multi-thread", "fs" ] }
+serde = { version = "1.0.215", features = [ "derive" ] }
 
 [features]
 default = [
