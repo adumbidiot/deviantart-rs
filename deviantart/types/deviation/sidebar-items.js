@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Author","Deviation","DeviationMedia","Html","Markup","MarkupDocument","MarkupDocumentContent","MarkupDocumentContentInner","MediaType","TextContext"]};
