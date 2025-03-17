@@ -2,7 +2,9 @@ use crate::load_config_cli;
 use crate::try_signin_cli;
 use crate::util::sanitize_path;
 use anyhow::bail;
+use anyhow::ensure;
 use anyhow::Context;
+use std::fmt::Write as _;
 use std::io::Write;
 
 #[derive(argh::FromArgs)]
@@ -162,7 +164,7 @@ where
     let css_3 = "h1 { color: #f2f2f2; font-weight: 400; font-size: 48px; line-height: 1.22; letter-spacing: .3px;}";
     write!(&mut html, "{css_3}")?;
 
-    let css_4 = "span { color: #b1b1b9; font-size: 18px; line-height: 1.5; letter-spacing: .3px; }";
+    let css_4 = "p { color: #b1b1b9; font-size: 18px; line-height: 1.5; letter-spacing: .3px; }";
     write!(&mut html, "{css_4}")?;
 
     write!(&mut html, "</style>")?;
@@ -173,19 +175,58 @@ where
 
     match markup {
         Ok(markup) => {
-            for block in markup.blocks.iter() {
-                let id = block.key.as_str();
-                write!(&mut html, "<div id = \"{id}\">")?;
+            ensure!(markup.version == 1);
+            ensure!(markup.document.kind == "doc");
 
-                write!(&mut html, "<span>")?;
-                if block.text.is_empty() {
-                    write!(&mut html, "<br>")?;
-                } else {
-                    let text = block.text.as_str();
-                    write!(&mut html, "{text}")?;
+            for content in markup.document.content.iter() {
+                match content.kind.as_str() {
+                    "paragraph" => {
+                        let mut style = String::new();
+                        for (key, value) in content.attrs.iter() {
+                            match key.as_str() {
+                                "indentation" => {
+                                    let value = value.as_str().context("value is not a string")?;
+
+                                    // IDK how to handle this.
+                                    // Likely handled by adding a margin at the start.
+                                    ensure!(value.is_empty());
+                                }
+                                "textAlign" => {
+                                    let value = value.as_str().context("value is not a string")?;
+                                    write!(&mut style, "text-align:{value};")?;
+                                }
+                                _ => bail!("unknown p attr \"{key}\""),
+                            }
+                        }
+                        write!(&mut html, "<p style=\"{style}\">")?;
+
+                        let content_inner_list = content
+                            .content
+                            .as_ref()
+                            .context("p missing inner content")?;
+
+                        for content_inner in content_inner_list {
+                            match content_inner.kind.as_str() {
+                                "text" => {
+                                    let text =
+                                        content_inner.text.as_ref().context("text missing text")?;
+                                    write!(&mut html, "{text} ")?;
+                                }
+                                "hardBreak" => {
+                                    // Deviantart seems to interpret this as 2 <br> tags.
+                                    write!(&mut html, "<br><br>")?;
+                                }
+                                kind => bail!("unknown p inner content kind \"{kind}\""),
+                            }
+                        }
+
+                        write!(&mut html, "</p>")?;
+                    }
+                    "da-video" => {
+                        println!("Warning: video tags are currently not supported. Skipping...");
+                    }
+                    kind => bail!("unknown content kind \"{kind}\""),
                 }
-                write!(&mut html, "</span>")?;
-                write!(&mut html, "</div>")?;
             }
         }
         Err(error) => {
