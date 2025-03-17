@@ -216,6 +216,7 @@ dependencies = [
 name = "deviantart"
 version = "0.0.0"
 dependencies = [
+ "cookie_store",
  "itoa",
  "once_cell",
  "regex",

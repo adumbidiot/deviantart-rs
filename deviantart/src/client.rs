@@ -66,7 +66,7 @@ impl Client {
     {
         let cookie_store = self.cookie_store.clone();
         tokio::task::spawn_blocking(move || {
-            let new_cookie_store = reqwest_cookie_store::CookieStore::load_json(reader)
+            let new_cookie_store = cookie_store::serde::json::load(reader)
                 .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
             let mut cookie_store = cookie_store.lock().expect("cookie store is poisoned");
             *cookie_store = new_cookie_store;
@@ -83,8 +83,7 @@ impl Client {
         let cookie_store = self.cookie_store.clone();
         tokio::task::spawn_blocking(move || {
             let cookie_store = cookie_store.lock().expect("cookie store is poisoned");
-            cookie_store
-                .save_json(&mut writer)
+            cookie_store::serde::json::save(&cookie_store, &mut writer)
                 .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
             Ok(())
         })

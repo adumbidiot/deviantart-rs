@@ -5,9 +5,8 @@ use url::Url;
 #[derive(Debug, serde::Deserialize)]
 pub struct Deviation {
     // TODO: This is a number in a scraped deviation. Make either parse here.
-    /// DeviantArt Author
+    // /// DeviantArt Author
     // pub author: Author,
-
     /// ?
     #[serde(rename = "blockReasons")]
     pub block_reasons: Vec<serde_json::Value>,
@@ -231,9 +230,8 @@ pub struct MediaType {
     #[serde(rename = "h")]
     pub height: u64,
 
-    /// ?
-    // pub r: u64,
-
+    // /// ?
+    // // pub r: u64,
     /// The kind of media
     #[serde(rename = "t")]
     pub kind: String,
@@ -242,9 +240,8 @@ pub struct MediaType {
     #[serde(rename = "w")]
     pub width: u64,
 
-    /// ?
-    // pub f: Option<u64>,
-
+    // /// ?
+    // // pub f: Option<u64>,
     /// ?
     pub b: Option<Url>,
 
