@@ -18,7 +18,7 @@ tokio = { version = "1.44.1", features = [ "rt" ] }
 url = { version = "2.5.4", features = [ "serde" ] }
 
 [dev-dependencies]
-tokio = { version = "1.44.1", features = [ "macros", "fs" ] }
+tokio = { version = "1.44.1", features = [ "macros", "fs", "rt-multi-thread" ] }
 
 [features]
 default = [ "rustls-tls" ]
