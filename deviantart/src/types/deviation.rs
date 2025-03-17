@@ -310,37 +310,34 @@ impl Html {
 /// Text Context Html Markup
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
 pub struct Markup {
-    /// Blocks of marked-up text
-    pub blocks: Vec<Block>,
-
-    /// ?
-    #[serde(rename = "entityMap")]
-    pub entity_map: serde_json::Value,
-
-    /// Unknown K/Vs
-    #[serde(flatten)]
-    pub unknown: HashMap<String, serde_json::Value>,
+    pub version: u32,
+    pub document: MarkupDocument,
 }
 
-/// A Markup block
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
-pub struct Block {
-    /// ?
-    pub data: serde_json::Value,
-
-    /// ?
-    pub depth: u64,
-
-    /// ?
-    pub key: String,
-
-    /// Text data
-    pub text: String,
+pub struct MarkupDocument {
+    pub content: Vec<MarkupDocumentContent>,
 
     #[serde(rename = "type")]
     pub kind: String,
+}
 
-    /// Unknown K/Vs
-    #[serde(flatten)]
-    pub unknown: HashMap<String, serde_json::Value>,
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub struct MarkupDocumentContent {
+    #[serde(rename = "type")]
+    pub kind: String,
+    /// This is not just html element attributes,
+    /// it also contains associated data only relavent for the given element.
+    pub attrs: HashMap<String, serde_json::Value>,
+
+    pub content: Option<Vec<MarkupDocumentContentInner>>,
+}
+
+/// This may be the same type as MarkupDocumentContent.
+#[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]
+pub struct MarkupDocumentContentInner {
+    #[serde(rename = "type")]
+    pub kind: String,
+    /// Only Some when kind is "text".
+    pub text: Option<String>,
 }

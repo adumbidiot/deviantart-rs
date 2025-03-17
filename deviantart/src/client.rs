@@ -444,9 +444,12 @@ mod test {
     #[tokio::test]
     #[ignore]
     async fn scrape_webpage_literature() {
+        let url =
+            "https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914";
+
         let client = Client::new();
         let scraped_webpage = client
-            .scrape_webpage("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914")
+            .scrape_webpage(url)
             .await
             .expect("failed to scrape webpage");
         let current_deviation = scraped_webpage
@@ -466,8 +469,11 @@ mod test {
 
     #[tokio::test]
     async fn oembed_works() {
+        let url =
+            "https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914";
+
         let client = Client::new();
-        let oembed = client.get_oembed("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914").await.expect("failed to get oembed");
+        let oembed = client.get_oembed(url).await.expect("failed to get oembed");
         assert!(oembed.title == "A Fictorian Tale Chapter 11");
     }
 
