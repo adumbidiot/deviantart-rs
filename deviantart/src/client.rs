@@ -66,7 +66,7 @@ impl Client {
     {
         let cookie_store = self.cookie_store.clone();
         tokio::task::spawn_blocking(move || {
-            let new_cookie_store = reqwest_cookie_store::CookieStore::load_json(reader)
+            let new_cookie_store = cookie_store::serde::json::load(reader)
                 .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
             let mut cookie_store = cookie_store.lock().expect("cookie store is poisoned");
             *cookie_store = new_cookie_store;
@@ -83,8 +83,7 @@ impl Client {
         let cookie_store = self.cookie_store.clone();
         tokio::task::spawn_blocking(move || {
             let cookie_store = cookie_store.lock().expect("cookie store is poisoned");
-            cookie_store
-                .save_json(&mut writer)
+            cookie_store::serde::json::save(&cookie_store, &mut writer)
                 .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
             Ok(())
         })
@@ -445,9 +444,12 @@ mod test {
     #[tokio::test]
     #[ignore]
     async fn scrape_webpage_literature() {
+        let url =
+            "https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914";
+
         let client = Client::new();
         let scraped_webpage = client
-            .scrape_webpage("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914")
+            .scrape_webpage(url)
             .await
             .expect("failed to scrape webpage");
         let current_deviation = scraped_webpage
@@ -467,8 +469,11 @@ mod test {
 
     #[tokio::test]
     async fn oembed_works() {
+        let url =
+            "https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914";
+
         let client = Client::new();
-        let oembed = client.get_oembed("https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914").await.expect("failed to get oembed");
+        let oembed = client.get_oembed(url).await.expect("failed to get oembed");
         assert!(oembed.title == "A Fictorian Tale Chapter 11");
     }
 
