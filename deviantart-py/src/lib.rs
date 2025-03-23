@@ -54,17 +54,32 @@ impl Client {
             .get_current_deviation_extended()
             .ok_or_else(|| PyRuntimeError::new_err("failed to get current deviation extended"))?;
 
+        let download_url = current_deviation_extended
+            .download
+            .as_ref()
+            .map(|download| download.url.clone())
+            .or_else(|| current_deviation.get_download_url())
+            .map(String::from);
+
+        let additional_media_download_urls = current_deviation_extended
+            .additional_media
+            .as_ref()
+            .map(|additional_media| {
+                additional_media
+                    .iter()
+                    .map(|additional_media| {
+                        Some(additional_media.media.base_uri.as_ref()?.to_string())
+                    })
+                    .collect()
+            });
+
         Ok(Deviation {
             id: current_deviation.deviation_id,
             title: current_deviation.title.clone(),
             description: current_deviation_extended.description.clone(),
             kind: current_deviation.kind.clone(),
-            download_url: current_deviation_extended
-                .download
-                .as_ref()
-                .map(|download| download.url.clone())
-                .or_else(|| current_deviation.get_download_url())
-                .map(String::from),
+            download_url,
+            additional_media_download_urls,
         })
     }
 
@@ -173,6 +188,9 @@ pub struct Deviation {
 
     #[pyo3(set, get)]
     pub download_url: Option<String>,
+
+    #[pyo3(get)]
+    pub additional_media_download_urls: Option<Vec<Option<String>>>,
 }
 
 #[pymethods]
@@ -207,8 +225,9 @@ impl Deviation {
         let title = &self.title;
         let description = &self.description;
         let download_url = &self.download_url;
+        let additional_media_download_urls = &self.additional_media_download_urls;
 
-        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?})")
+        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?}, additional_media_download_urls={additional_media_download_urls:?})")
     }
 }
 
