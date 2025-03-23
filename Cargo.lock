@@ -249,6 +249,8 @@ version = "0.0.0"
 dependencies = [
  "deviantart",
  "pyo3",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 
