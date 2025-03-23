@@ -101,7 +101,8 @@ impl Deviation {
     ///
     /// Be very careful about using this for caching.
     /// The embedded download urls can and will expire.
-    pub fn from_json(&self, value: &str) -> PyResult<String> {
+    #[staticmethod]
+    pub fn from_json(value: &str) -> PyResult<String> {
         serde_json::from_str(value).map_err(|error| PyRuntimeError::new_err(error.to_string()))
     }
 
