@@ -1,6 +1,7 @@
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyBytes;
 use pyo3::types::PyString;
 use pyo3::types::PyStringMethods;
 use std::sync::LazyLock;
@@ -59,6 +60,36 @@ impl Client {
             kind: current_deviation.kind.clone(),
             download_url: current_deviation.get_download_url().map(String::from),
         })
+    }
+
+    pub fn download_deviation<'p>(
+        &self,
+        deviation: &Deviation,
+        py: Python<'p>,
+    ) -> PyResult<Bound<'p, PyBytes>> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        let download_url = deviation
+            .download_url
+            .as_ref()
+            .ok_or(PyValueError::new_err("deviation is missing a download url"))?;
+
+        let bytes = tokio_rt
+            .block_on(async {
+                self.client
+                    .client
+                    .get(download_url)
+                    .send()
+                    .await?
+                    .error_for_status()?
+                    .bytes()
+                    .await
+            })
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        Ok(PyBytes::new(py, &bytes))
     }
 }
 
