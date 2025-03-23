@@ -93,8 +93,15 @@ impl Deviation {
     ///
     /// Be very careful about using this for caching.
     /// The embedded download urls can and will expire.
-    pub fn to_json(&self) -> PyResult<String> {
-        serde_json::to_string(&self).map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    #[pyo3(signature=(pretty=false))]
+    pub fn to_json(&self, pretty: bool) -> PyResult<String> {
+        let result = if pretty {
+            serde_json::to_string_pretty(&self)
+        } else {
+            serde_json::to_string(&self)
+        };
+
+        result.map_err(|error| PyRuntimeError::new_err(error.to_string()))
     }
 
     /// Parse this from a json string.
