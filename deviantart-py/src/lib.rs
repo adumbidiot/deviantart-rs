@@ -58,7 +58,12 @@ impl Client {
             title: current_deviation.title.clone(),
             description: current_deviation_extended.description.clone(),
             kind: current_deviation.kind.clone(),
-            download_url: current_deviation.get_download_url().map(String::from),
+            download_url: current_deviation_extended
+                .download
+                .as_ref()
+                .map(|download| download.url.clone())
+                .or_else(|| current_deviation.get_download_url())
+                .map(String::from),
         })
     }
 
