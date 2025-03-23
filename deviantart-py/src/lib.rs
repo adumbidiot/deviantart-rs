@@ -26,6 +26,7 @@ impl Client {
         }
     }
 
+    /// Get metadata for a deviation.
     pub fn get_deviation(&self, source: Bound<'_, PyAny>) -> PyResult<Deviation> {
         let tokio_rt = TOKIO_RT
             .as_ref()
@@ -67,6 +68,7 @@ impl Client {
         })
     }
 
+    /// Download a deviation.
     pub fn download_deviation<'p>(
         &self,
         deviation: &Deviation,
@@ -95,6 +97,56 @@ impl Client {
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
 
         Ok(PyBytes::new(py, &bytes))
+    }
+
+    /// Check if this client is logged in.
+    pub fn is_logged_in(&self) -> PyResult<bool> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        tokio_rt
+            .block_on(self.client.is_logged_in_online())
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Load cookies.
+    pub fn load_cookies_json(&self, cookie_json_string: String) -> PyResult<()> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        tokio_rt
+            .block_on(
+                self.client
+                    .load_json_cookies(std::io::Cursor::new(cookie_json_string)),
+            )
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Dump cookies.
+    pub fn dump_cookies_json(&self) -> PyResult<String> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        let buffer = Vec::new();
+        let buffer = tokio_rt
+            .block_on(self.client.save_json_cookies(buffer))
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        Ok(String::from_utf8(buffer)?)
+    }
+
+    /// Log in with this client.
+    pub fn login(&self, username: &str, password: &str) -> PyResult<()> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        tokio_rt
+            .block_on(self.client.sign_in(username, password))
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))
     }
 }
 

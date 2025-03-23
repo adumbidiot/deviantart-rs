@@ -76,7 +76,7 @@ impl Client {
     }
 
     /// Save the cookie store from a json writer.
-    pub async fn save_json_cookies<W>(&self, mut writer: W) -> Result<(), Error>
+    pub async fn save_json_cookies<W>(&self, mut writer: W) -> Result<W, Error>
     where
         W: std::io::Write + Send + 'static,
     {
@@ -85,7 +85,7 @@ impl Client {
             let cookie_store = cookie_store.lock().expect("cookie store is poisoned");
             cookie_store::serde::json::save(&cookie_store, &mut writer)
                 .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
-            Ok(())
+            Ok(writer)
         })
         .await?
     }
