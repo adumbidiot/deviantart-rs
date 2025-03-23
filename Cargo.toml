@@ -2,7 +2,8 @@
 resolver = "2"
 members = [
     "deviantart",
-    "deviantart-cli"
+    "deviantart-cli",
+    "deviantart-py",
 ]
 
 [profile.release]

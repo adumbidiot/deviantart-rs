@@ -1,0 +1,12 @@
+[package]
+name = "deviantart-py"
+version = "0.0.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "deviantart_py"
+crate-type = [ "cdylib" ]
+
+[dependencies]
+pyo3 = { version = "0.21.1", features = [ "abi3", "abi3-py39" ] }
