@@ -26,6 +26,7 @@ impl Client {
         }
     }
 
+    /// Get metadata for a deviation.
     pub fn get_deviation(&self, source: Bound<'_, PyAny>) -> PyResult<Deviation> {
         let tokio_rt = TOKIO_RT
             .as_ref()
@@ -53,15 +54,36 @@ impl Client {
             .get_current_deviation_extended()
             .ok_or_else(|| PyRuntimeError::new_err("failed to get current deviation extended"))?;
 
+        let download_url = current_deviation_extended
+            .download
+            .as_ref()
+            .map(|download| download.url.clone())
+            .or_else(|| current_deviation.get_download_url())
+            .map(String::from);
+
+        let additional_media_download_urls = current_deviation_extended
+            .additional_media
+            .as_ref()
+            .map(|additional_media| {
+                additional_media
+                    .iter()
+                    .map(|additional_media| {
+                        Some(additional_media.media.base_uri.as_ref()?.to_string())
+                    })
+                    .collect()
+            });
+
         Ok(Deviation {
             id: current_deviation.deviation_id,
             title: current_deviation.title.clone(),
             description: current_deviation_extended.description.clone(),
             kind: current_deviation.kind.clone(),
-            download_url: current_deviation.get_download_url().map(String::from),
+            download_url,
+            additional_media_download_urls,
         })
     }
 
+    /// Download a deviation.
     pub fn download_deviation<'p>(
         &self,
         deviation: &Deviation,
@@ -91,6 +113,56 @@ impl Client {
 
         Ok(PyBytes::new(py, &bytes))
     }
+
+    /// Check if this client is logged in.
+    pub fn is_logged_in(&self) -> PyResult<bool> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        tokio_rt
+            .block_on(self.client.is_logged_in_online())
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Load cookies.
+    pub fn load_cookies_json(&self, cookie_json_string: String) -> PyResult<()> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        tokio_rt
+            .block_on(
+                self.client
+                    .load_json_cookies(std::io::Cursor::new(cookie_json_string)),
+            )
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Dump cookies.
+    pub fn dump_cookies_json(&self) -> PyResult<String> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        let buffer = Vec::new();
+        let buffer = tokio_rt
+            .block_on(self.client.save_json_cookies(buffer))
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        Ok(String::from_utf8(buffer)?)
+    }
+
+    /// Log in with this client.
+    pub fn login(&self, username: &str, password: &str) -> PyResult<()> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        tokio_rt
+            .block_on(self.client.sign_in(username, password))
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
 }
 
 impl Default for Client {
@@ -116,6 +188,9 @@ pub struct Deviation {
 
     #[pyo3(set, get)]
     pub download_url: Option<String>,
+
+    #[pyo3(get)]
+    pub additional_media_download_urls: Option<Vec<Option<String>>>,
 }
 
 #[pymethods]
@@ -150,8 +225,9 @@ impl Deviation {
         let title = &self.title;
         let description = &self.description;
         let download_url = &self.download_url;
+        let additional_media_download_urls = &self.additional_media_download_urls;
 
-        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?})")
+        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?}, additional_media_download_urls={additional_media_download_urls:?})")
     }
 }
 

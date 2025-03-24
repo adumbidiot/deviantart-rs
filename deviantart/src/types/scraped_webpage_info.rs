@@ -1,4 +1,5 @@
 use super::Deviation;
+use super::Media;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use std::collections::HashMap;
@@ -177,6 +178,10 @@ pub struct DeviationExtended {
     /// HTML description
     pub description: Option<String>,
 
+    /// Other media for this deviation
+    #[serde(rename = "additionalMedia")]
+    pub additional_media: Option<Vec<AdditionalMedia>>,
+
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
@@ -199,6 +204,16 @@ pub struct Download {
 
     /// The url
     pub url: Url,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct AdditionalMedia {
+    /// Media info
+    pub media: Media,
 
     /// Unknown data
     #[serde(flatten)]
