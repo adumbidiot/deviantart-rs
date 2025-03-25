@@ -161,6 +161,24 @@ impl ScrapedWebPageInfo {
             .get(&key)?
             .as_with_offset_stream()
     }
+
+    /// Get a gallery folder entity by id
+    pub fn get_gallery_folder_entity(&self, folder_id: u64) -> Option<&GalleryFolder> {
+        self.entities
+            .as_ref()?
+            .gallery_folder
+            .as_ref()?
+            .get(itoa::Buffer::new().format(folder_id))
+    }
+
+    /// Get a user entity by id
+    pub fn get_user_entity(&self, user_id: u64) -> Option<&User> {
+        self.entities
+            .as_ref()?
+            .user
+            .as_ref()?
+            .get(itoa::Buffer::new().format(user_id))
+    }
 }
 
 /// ?
@@ -185,6 +203,13 @@ pub struct Entities {
     #[serde(rename = "deviationExtended")]
     pub deviation_extended: Option<HashMap<String, DeviationExtended>>,
 
+    /// Gallery folders
+    #[serde(rename = "galleryFolder")]
+    pub gallery_folder: Option<HashMap<String, GalleryFolder>>,
+
+    /// Users
+    pub user: Option<HashMap<String, User>>,
+
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
@@ -202,6 +227,41 @@ pub struct DeviationExtended {
     /// Other media for this deviation
     #[serde(rename = "additionalMedia")]
     pub additional_media: Option<Vec<AdditionalMedia>>,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// A gallery folder
+#[derive(Debug, serde::Deserialize)]
+pub struct GalleryFolder {
+    /// The folder id.
+    ///
+    /// For some reason, this can be -1 sometimes.
+    #[serde(rename = "folderId")]
+    pub folder_id: i64,
+
+    /// The name of the folder
+    pub name: String,
+
+    /// The user id of the owner of the folder
+    pub owner: u64,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// A user
+#[derive(Debug, serde::Deserialize)]
+pub struct User {
+    /// The user id
+    #[serde(rename = "userId")]
+    pub user_id: u64,
+
+    /// The user name
+    pub username: String,
 
     /// Unknown data
     #[serde(flatten)]
