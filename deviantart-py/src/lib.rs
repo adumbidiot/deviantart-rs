@@ -182,12 +182,52 @@ impl Client {
             .get_folder_deviations_stream(id)
             .ok_or_else(|| PyRuntimeError::new_err("missing folder deviation stream"))?;
 
-        let deviation_ids = stream.items.clone();
+        let mut deviation_ids = stream.items.clone();
+
+        let folder_entity = scraped_webpage_info
+            .get_gallery_folder_entity(id)
+            .ok_or_else(|| PyRuntimeError::new_err("missing gallery folder entity"))?;
+
+        let user_entity = scraped_webpage_info
+            .get_user_entity(folder_entity.owner)
+            .ok_or_else(|| PyRuntimeError::new_err("missing user entity"))?;
+
+        let owner_name = user_entity.username.clone();
+
+        if stream.has_more {
+            tokio_rt
+                .block_on(async {
+                    let mut has_more = true;
+                    while has_more {
+                        let offset = u64::try_from(deviation_ids.len()).unwrap();
+                        let response = self
+                            .client
+                            .list_folder_contents(
+                                &owner_name,
+                                id,
+                                offset,
+                                &scraped_webpage_info.config.csrf_token,
+                            )
+                            .await?;
+                        deviation_ids.extend(
+                            response
+                                .results
+                                .iter()
+                                .map(|deviation| deviation.deviation_id),
+                        );
+                        has_more = response.has_more;
+                    }
+
+                    Result::<_, deviantart::Error>::Ok(())
+                })
+                .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+        }
 
         Ok(Folder {
             id,
+            name: folder_entity.name.clone(),
+            owner_name,
             deviation_ids,
-            has_more: stream.has_more,
         })
     }
 }
@@ -264,11 +304,14 @@ pub struct Folder {
     #[pyo3(get, set)]
     pub id: u64,
 
-    #[pyo3(get, set)]
-    pub deviation_ids: Vec<u64>,
+    #[pyo3(set, get)]
+    pub name: String,
+
+    #[pyo3(set, get)]
+    pub owner_name: String,
 
     #[pyo3(get, set)]
-    pub has_more: bool,
+    pub deviation_ids: Vec<u64>,
 }
 
 #[pymethods]
@@ -293,10 +336,13 @@ impl Folder {
 
     pub fn __repr__(&self) -> String {
         let id = &self.id;
+        let name = &self.name;
+        let owner_name = &self.owner_name;
         let deviation_ids = &self.deviation_ids;
-        let has_more = if self.has_more { "True" } else { "False" };
 
-        format!("Folder(id={id}, deviation_ids={deviation_ids:?}, has_more={has_more})")
+        format!(
+            "Folder(id={id}, name={name}, owner_name={owner_name}, deviation_ids={deviation_ids:?})"
+        )
     }
 }
 
