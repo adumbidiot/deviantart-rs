@@ -163,6 +163,33 @@ impl Client {
             .block_on(self.client.sign_in(username, password))
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))
     }
+
+    /// Get the folder given by the url.
+    pub fn get_folder(&self, url: &str) -> PyResult<Folder> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        let scraped_webpage_info = tokio_rt
+            .block_on(async { self.client.scrape_webpage(url).await })
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        let id = scraped_webpage_info
+            .get_current_folder_id()
+            .ok_or_else(|| PyRuntimeError::new_err("missing folder id"))?;
+
+        let stream = scraped_webpage_info
+            .get_folder_deviations_stream(id)
+            .ok_or_else(|| PyRuntimeError::new_err("missing folder deviation stream"))?;
+
+        let deviation_ids = stream.items.clone();
+
+        Ok(Folder {
+            id,
+            deviation_ids,
+            has_more: stream.has_more,
+        })
+    }
 }
 
 impl Default for Client {
@@ -228,6 +255,48 @@ impl Deviation {
         let additional_media_download_urls = &self.additional_media_download_urls;
 
         format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?}, additional_media_download_urls={additional_media_download_urls:?})")
+    }
+}
+
+#[pyclass]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Folder {
+    #[pyo3(get, set)]
+    pub id: u64,
+
+    #[pyo3(get, set)]
+    pub deviation_ids: Vec<u64>,
+
+    #[pyo3(get, set)]
+    pub has_more: bool,
+}
+
+#[pymethods]
+impl Folder {
+    /// Dump this to a json string.
+    #[pyo3(signature=(pretty=false))]
+    pub fn to_json(&self, pretty: bool) -> PyResult<String> {
+        let result = if pretty {
+            serde_json::to_string_pretty(&self)
+        } else {
+            serde_json::to_string(&self)
+        };
+
+        result.map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Parse this from a json string.
+    #[staticmethod]
+    pub fn from_json(value: &str) -> PyResult<Self> {
+        serde_json::from_str(value).map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    pub fn __repr__(&self) -> String {
+        let id = &self.id;
+        let deviation_ids = &self.deviation_ids;
+        let has_more = if self.has_more { "True" } else { "False" };
+
+        format!("Folder(id={id}, deviation_ids={deviation_ids:?}, has_more={has_more})")
     }
 }
 
