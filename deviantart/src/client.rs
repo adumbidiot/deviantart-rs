@@ -468,6 +468,27 @@ mod test {
     }
 
     #[tokio::test]
+    #[ignore]
+    async fn scrape_webpage_gallery() {
+        let url = "https://www.deviantart.com/tohokari-steel/gallery/91687487/prince-of-heart";
+
+        let client = Client::new();
+        let scraped_webpage = client
+            .scrape_webpage(url)
+            .await
+            .expect("failed to scrape webpage");
+        let folder_id = scraped_webpage
+            .get_current_folder_id()
+            .expect("missing folder id");
+        assert!(folder_id == 91687487, "{folder_id} != 91687487");
+
+        let stream = scraped_webpage
+            .get_folder_deviations_stream(folder_id)
+            .expect("missing stream");
+        assert!(stream.has_more);
+    }
+
+    #[tokio::test]
     async fn oembed_works() {
         let url =
             "https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914";
