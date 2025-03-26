@@ -6,6 +6,7 @@ pub mod types;
 pub use self::client::Client;
 pub use self::types::Deviation;
 pub use self::types::DeviationExtended;
+pub use self::types::ListFolderContentsResponse;
 pub use self::types::OEmbed;
 pub use self::types::ScrapedStashInfo;
 pub use self::types::ScrapedWebPageInfo;

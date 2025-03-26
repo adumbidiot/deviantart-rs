@@ -1,5 +1,6 @@
 use crate::Deviation;
 use crate::Error;
+use crate::ListFolderContentsResponse;
 use crate::OEmbed;
 use crate::ScrapedWebPageInfo;
 use crate::WrapBoxError;
@@ -250,6 +251,37 @@ impl Client {
     pub fn search(&self, query: &str, cursor: Option<&str>) -> SearchCursor {
         SearchCursor::new(self.clone(), query, cursor)
     }
+
+    /// List gallery contents.
+    pub async fn list_folder_contents(
+        &self,
+        username: &str,
+        folder_id: u64,
+        offset: u64,
+        csrf_token: &str,
+    ) -> Result<ListFolderContentsResponse, Error> {
+        let mut url = Url::parse("https://www.deviantart.com/_puppy/dashared/gallection/contents")?;
+        {
+            let mut query_pairs = url.query_pairs_mut();
+
+            query_pairs.append_pair("username", username);
+            query_pairs.append_pair("type", "gallery");
+            query_pairs.append_pair("order", "personalized");
+            query_pairs.append_pair("offset", itoa::Buffer::new().format(offset));
+            query_pairs.append_pair("limit", "24");
+            query_pairs.append_pair("folderid", itoa::Buffer::new().format(folder_id));
+            query_pairs.append_pair("csrf_token", csrf_token);
+        }
+
+        Ok(self
+            .client
+            .get(url)
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?)
+    }
 }
 
 impl Default for Client {
@@ -465,6 +497,47 @@ mod test {
             .expect("missing markup")
             .expect("failed to parse markup");
         // dbg!(&markup);
+    }
+
+    #[tokio::test]
+    #[ignore]
+    async fn scrape_webpage_gallery() {
+        let url = "https://www.deviantart.com/tohokari-steel/gallery/91687487/prince-of-heart";
+
+        let client = Client::new();
+        let scraped_webpage = client
+            .scrape_webpage(url)
+            .await
+            .expect("failed to scrape webpage");
+        let folder_id = scraped_webpage
+            .get_current_folder_id()
+            .expect("missing folder id");
+        assert!(folder_id == 91687487, "{folder_id} != 91687487");
+
+        let stream = scraped_webpage
+            .get_folder_deviations_stream(folder_id)
+            .expect("missing stream");
+        assert!(stream.has_more);
+
+        let gallery_folder = scraped_webpage
+            .get_gallery_folder_entity(folder_id)
+            .expect("missing gallery folder entity");
+        dbg!(gallery_folder);
+
+        let user = scraped_webpage
+            .get_user_entity(gallery_folder.owner)
+            .expect("failed to get user");
+
+        let response = client
+            .list_folder_contents(
+                &user.username,
+                folder_id,
+                0,
+                &scraped_webpage.config.csrf_token,
+            )
+            .await
+            .expect("failed to list folder contents");
+        dbg!(response);
     }
 
     #[tokio::test]

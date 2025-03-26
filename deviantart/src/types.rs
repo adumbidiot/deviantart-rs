@@ -1,5 +1,7 @@
 /// The `Deviation` type.
 pub mod deviation;
+/// The `ListFolderContentsResponse` type.
+pub mod list_folder_contents_response;
 /// The `Media` type.
 pub mod media;
 /// The `OEmbed` type
@@ -10,6 +12,7 @@ pub mod scraped_stash_info;
 pub mod scraped_webpage_info;
 
 pub use self::deviation::Deviation;
+pub use self::list_folder_contents_response::ListFolderContentsResponse;
 pub use self::media::Media;
 pub use self::oembed::OEmbed;
 pub use self::scraped_stash_info::ScrapedStashInfo;

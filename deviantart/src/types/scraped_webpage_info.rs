@@ -46,6 +46,9 @@ pub struct ScrapedWebPageInfo {
     #[serde(rename = "csrfToken")]
     pub csrf_token: Option<Box<str>>,
 
+    #[serde(rename = "gallectionSection")]
+    pub gallection_section: Option<GallectionSection>,
+
     /// Needed for login.
     #[serde(rename = "luToken")]
     pub lu_token: Option<Box<str>>,
@@ -140,6 +143,42 @@ impl ScrapedWebPageInfo {
             .deviation
             .remove(key_buffer.format(id))
     }
+
+    /// Get the current folder id, if in a gallery.
+    pub fn get_current_folder_id(&self) -> Option<u64> {
+        Some(self.gallection_section.as_ref()?.selected_folder_id)
+    }
+
+    /// Get a stream for folder post ids, by folder id.
+    ///
+    /// This will return the deviation ids for the current folder.
+    pub fn get_folder_deviations_stream(&self, folder_id: u64) -> Option<&WithOffsetStream> {
+        let key = format!("folder-deviations-gallery-{folder_id}");
+
+        self.streams
+            .as_ref()?
+            .streams
+            .get(&key)?
+            .as_with_offset_stream()
+    }
+
+    /// Get a gallery folder entity by id
+    pub fn get_gallery_folder_entity(&self, folder_id: u64) -> Option<&GalleryFolder> {
+        self.entities
+            .as_ref()?
+            .gallery_folder
+            .as_ref()?
+            .get(itoa::Buffer::new().format(folder_id))
+    }
+
+    /// Get a user entity by id
+    pub fn get_user_entity(&self, user_id: u64) -> Option<&User> {
+        self.entities
+            .as_ref()?
+            .user
+            .as_ref()?
+            .get(itoa::Buffer::new().format(user_id))
+    }
 }
 
 /// ?
@@ -154,7 +193,7 @@ pub struct Config {
     pub unknown: HashMap<String, serde_json::Value>,
 }
 
-/// ?
+/// Page entities, like deviations, folders, and users.
 #[derive(Debug, serde::Deserialize)]
 pub struct Entities {
     /// Deviations
@@ -163,6 +202,13 @@ pub struct Entities {
     /// Extended Deviation Info
     #[serde(rename = "deviationExtended")]
     pub deviation_extended: Option<HashMap<String, DeviationExtended>>,
+
+    /// Gallery folders
+    #[serde(rename = "galleryFolder")]
+    pub gallery_folder: Option<HashMap<String, GalleryFolder>>,
+
+    /// Users
+    pub user: Option<HashMap<String, User>>,
 
     /// Unknown data
     #[serde(flatten)]
@@ -181,6 +227,41 @@ pub struct DeviationExtended {
     /// Other media for this deviation
     #[serde(rename = "additionalMedia")]
     pub additional_media: Option<Vec<AdditionalMedia>>,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// A gallery folder
+#[derive(Debug, serde::Deserialize)]
+pub struct GalleryFolder {
+    /// The folder id.
+    ///
+    /// For some reason, this can be -1 sometimes.
+    #[serde(rename = "folderId")]
+    pub folder_id: i64,
+
+    /// The name of the folder
+    pub name: String,
+
+    /// The user id of the owner of the folder
+    pub owner: u64,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// A user
+#[derive(Debug, serde::Deserialize)]
+pub struct User {
+    /// The user id
+    #[serde(rename = "userId")]
+    pub user_id: u64,
+
+    /// The user name
+    pub username: String,
 
     /// Unknown data
     #[serde(flatten)]
@@ -263,6 +344,52 @@ pub struct Streams {
     #[serde(rename = "@@BROWSE_PAGE_STREAM")]
     pub browse_page_stream: Option<BrowsePageStream>,
 
+    /// Extra data.
+    ///
+    /// This can include data whos purpose is known, like entries in a folder.
+    #[serde(flatten)]
+    pub streams: HashMap<String, Stream>,
+}
+
+/// ?
+#[derive(Debug, serde::Deserialize)]
+#[serde(tag = "streamType")]
+pub enum Stream {
+    #[serde(rename = "WITH_OFFSET")]
+    WithOffset(WithOffsetStream),
+
+    #[serde(untagged)]
+    Unknown(serde_json::Value),
+}
+
+impl Stream {
+    /// Get this as a WithOffset stream.
+    pub fn as_with_offset_stream(&self) -> Option<&WithOffsetStream> {
+        match self {
+            Self::WithOffset(stream) => Some(stream),
+            _ => None,
+        }
+    }
+}
+
+/// ?
+#[derive(Debug, serde::Deserialize)]
+pub struct WithOffsetStream {
+    /// Items in the stream?
+    pub items: Vec<u64>,
+
+    /// The # of items per fetch?
+    #[serde(rename = "itemsPerFetch")]
+    pub items_per_fetch: u32,
+
+    /// Has more entries?
+    #[serde(rename = "hasMore")]
+    pub has_more: bool,
+
+    /// ?
+    #[serde(rename = "hasLess")]
+    pub has_less: bool,
+
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
@@ -332,6 +459,26 @@ pub struct StreamParams {
     /// ?
     #[serde(rename = "initialOffset")]
     pub initial_offset: u64,
+
+    /// Unknown data
+    #[serde(flatten)]
+    pub unknown: HashMap<String, serde_json::Value>,
+}
+
+/// Gallery selection info
+#[derive(Debug, serde::Deserialize)]
+pub struct GallectionSection {
+    /// The current page
+    #[serde(rename = "currentPage")]
+    pub page: u64,
+
+    /// The id of the selected folder
+    #[serde(rename = "selectedFolderId")]
+    pub selected_folder_id: u64,
+
+    /// The total number of pages
+    #[serde(rename = "totalPages")]
+    pub total_pages: u64,
 
     /// Unknown data
     #[serde(flatten)]

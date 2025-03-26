@@ -163,6 +163,73 @@ impl Client {
             .block_on(self.client.sign_in(username, password))
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))
     }
+
+    /// Get the folder given by the url.
+    pub fn get_folder(&self, url: &str) -> PyResult<Folder> {
+        let tokio_rt = TOKIO_RT
+            .as_ref()
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        let scraped_webpage_info = tokio_rt
+            .block_on(async { self.client.scrape_webpage(url).await })
+            .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+
+        let id = scraped_webpage_info
+            .get_current_folder_id()
+            .ok_or_else(|| PyRuntimeError::new_err("missing folder id"))?;
+
+        let stream = scraped_webpage_info
+            .get_folder_deviations_stream(id)
+            .ok_or_else(|| PyRuntimeError::new_err("missing folder deviation stream"))?;
+
+        let mut deviation_ids = stream.items.clone();
+
+        let folder_entity = scraped_webpage_info
+            .get_gallery_folder_entity(id)
+            .ok_or_else(|| PyRuntimeError::new_err("missing gallery folder entity"))?;
+
+        let user_entity = scraped_webpage_info
+            .get_user_entity(folder_entity.owner)
+            .ok_or_else(|| PyRuntimeError::new_err("missing user entity"))?;
+
+        let owner_name = user_entity.username.clone();
+
+        if stream.has_more {
+            tokio_rt
+                .block_on(async {
+                    let mut has_more = true;
+                    while has_more {
+                        let offset = u64::try_from(deviation_ids.len()).unwrap();
+                        let response = self
+                            .client
+                            .list_folder_contents(
+                                &owner_name,
+                                id,
+                                offset,
+                                &scraped_webpage_info.config.csrf_token,
+                            )
+                            .await?;
+                        deviation_ids.extend(
+                            response
+                                .results
+                                .iter()
+                                .map(|deviation| deviation.deviation_id),
+                        );
+                        has_more = response.has_more;
+                    }
+
+                    Result::<_, deviantart::Error>::Ok(())
+                })
+                .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+        }
+
+        Ok(Folder {
+            id,
+            name: folder_entity.name.clone(),
+            owner_name,
+            deviation_ids,
+        })
+    }
 }
 
 impl Default for Client {
@@ -231,10 +298,59 @@ impl Deviation {
     }
 }
 
+#[pyclass]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Folder {
+    #[pyo3(get, set)]
+    pub id: u64,
+
+    #[pyo3(set, get)]
+    pub name: String,
+
+    #[pyo3(set, get)]
+    pub owner_name: String,
+
+    #[pyo3(get, set)]
+    pub deviation_ids: Vec<u64>,
+}
+
+#[pymethods]
+impl Folder {
+    /// Dump this to a json string.
+    #[pyo3(signature=(pretty=false))]
+    pub fn to_json(&self, pretty: bool) -> PyResult<String> {
+        let result = if pretty {
+            serde_json::to_string_pretty(&self)
+        } else {
+            serde_json::to_string(&self)
+        };
+
+        result.map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Parse this from a json string.
+    #[staticmethod]
+    pub fn from_json(value: &str) -> PyResult<Self> {
+        serde_json::from_str(value).map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    pub fn __repr__(&self) -> String {
+        let id = &self.id;
+        let name = &self.name;
+        let owner_name = &self.owner_name;
+        let deviation_ids = &self.deviation_ids;
+
+        format!(
+            "Folder(id={id}, name={name}, owner_name={owner_name}, deviation_ids={deviation_ids:?})"
+        )
+    }
+}
+
 /// A Python module for accessing deviantart.
 #[pymodule]
 fn deviantart_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Client>()?;
     m.add_class::<Deviation>()?;
+    m.add_class::<Folder>()?;
     Ok(())
 }
