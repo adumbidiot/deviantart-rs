@@ -61,6 +61,8 @@ impl Client {
             .or_else(|| current_deviation.get_download_url())
             .map(String::from);
 
+        let fullview_url = current_deviation.get_fullview_url().map(String::from);
+
         let additional_media_download_urls = current_deviation_extended
             .additional_media
             .as_ref()
@@ -79,30 +81,40 @@ impl Client {
             description: current_deviation_extended.description.clone(),
             kind: current_deviation.kind.clone(),
             download_url,
+            fullview_url,
             additional_media_download_urls,
         })
     }
 
     /// Download a deviation.
+    #[pyo3(signature = (deviation, /, use_fullview=false))]
     pub fn download_deviation<'p>(
         &self,
         deviation: &Deviation,
+        use_fullview: bool,
         py: Python<'p>,
     ) -> PyResult<Bound<'p, PyBytes>> {
         let tokio_rt = TOKIO_RT
             .as_ref()
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
 
-        let download_url = deviation
-            .download_url
-            .as_ref()
-            .ok_or(PyValueError::new_err("deviation is missing a download url"))?;
+        let url = if use_fullview {
+            deviation
+                .fullview_url
+                .as_ref()
+                .ok_or(PyValueError::new_err("deviation is missing a fullview url"))?
+        } else {
+            deviation
+                .download_url
+                .as_ref()
+                .ok_or(PyValueError::new_err("deviation is missing a download url"))?
+        };
 
         let bytes = tokio_rt
             .block_on(async {
                 self.client
                     .client
-                    .get(download_url)
+                    .get(url)
                     .send()
                     .await?
                     .error_for_status()?
@@ -256,6 +268,9 @@ pub struct Deviation {
     #[pyo3(set, get)]
     pub download_url: Option<String>,
 
+    #[pyo3(set, get)]
+    pub fullview_url: Option<String>,
+
     #[pyo3(get)]
     pub additional_media_download_urls: Option<Vec<Option<String>>>,
 }
@@ -292,9 +307,10 @@ impl Deviation {
         let title = &self.title;
         let description = &self.description;
         let download_url = &self.download_url;
+        let fullview_url = &self.fullview_url;
         let additional_media_download_urls = &self.additional_media_download_urls;
 
-        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?}, additional_media_download_urls={additional_media_download_urls:?})")
+        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?}, fullview_url={fullview_url:?}, additional_media_download_urls={additional_media_download_urls:?})")
     }
 }
 
