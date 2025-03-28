@@ -61,6 +61,8 @@ impl Client {
             .or_else(|| current_deviation.get_download_url())
             .map(String::from);
 
+        let fullview_url = current_deviation.get_fullview_url().map(String::from);
+
         let additional_media_download_urls = current_deviation_extended
             .additional_media
             .as_ref()
@@ -79,30 +81,40 @@ impl Client {
             description: current_deviation_extended.description.clone(),
             kind: current_deviation.kind.clone(),
             download_url,
+            fullview_url,
             additional_media_download_urls,
         })
     }
 
     /// Download a deviation.
+    #[pyo3(signature = (deviation, use_fullview=false))]
     pub fn download_deviation<'p>(
         &self,
         deviation: &Deviation,
+        use_fullview: bool,
         py: Python<'p>,
     ) -> PyResult<Bound<'p, PyBytes>> {
         let tokio_rt = TOKIO_RT
             .as_ref()
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
 
-        let download_url = deviation
-            .download_url
-            .as_ref()
-            .ok_or(PyValueError::new_err("deviation is missing a download url"))?;
+        let url = if use_fullview {
+            deviation
+                .fullview_url
+                .as_ref()
+                .ok_or(PyValueError::new_err("deviation is missing a fullview url"))?
+        } else {
+            deviation
+                .download_url
+                .as_ref()
+                .ok_or(PyValueError::new_err("deviation is missing a download url"))?
+        };
 
         let bytes = tokio_rt
             .block_on(async {
                 self.client
                     .client
-                    .get(download_url)
+                    .get(url)
                     .send()
                     .await?
                     .error_for_status()?
@@ -126,7 +138,7 @@ impl Client {
     }
 
     /// Load cookies.
-    pub fn load_cookies_json(&self, cookie_json_string: String) -> PyResult<()> {
+    pub fn load_cookies(&self, cookie_json_string: String) -> PyResult<()> {
         let tokio_rt = TOKIO_RT
             .as_ref()
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
@@ -140,7 +152,7 @@ impl Client {
     }
 
     /// Dump cookies.
-    pub fn dump_cookies_json(&self) -> PyResult<String> {
+    pub fn dump_cookies(&self) -> PyResult<String> {
         let tokio_rt = TOKIO_RT
             .as_ref()
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
@@ -256,12 +268,43 @@ pub struct Deviation {
     #[pyo3(set, get)]
     pub download_url: Option<String>,
 
+    #[pyo3(set, get)]
+    pub fullview_url: Option<String>,
+
     #[pyo3(get)]
     pub additional_media_download_urls: Option<Vec<Option<String>>>,
 }
 
 #[pymethods]
 impl Deviation {
+    /// Get the name of the file.
+    #[pyo3(signature=(r#type="download"))]
+    pub fn get_file_name(&self, r#type: &str) -> PyResult<Option<String>> {
+        match r#type {
+            "download" => self
+                .download_url
+                .as_deref()
+                .map(get_url_file_name)
+                .transpose(),
+            "fullview" => self
+                .fullview_url
+                .as_deref()
+                .map(get_url_file_name)
+                .transpose(),
+            _ => Err(PyValueError::new_err(
+                "type must be \"download\" or \"fullview\"",
+            )),
+        }
+    }
+
+    /// Get the name of the file from the download url.
+    pub fn get_fullview_file_name(&self) -> PyResult<Option<String>> {
+        self.fullview_url
+            .as_deref()
+            .map(get_url_file_name)
+            .transpose()
+    }
+
     /// Dump this to a json string.
     ///
     /// Be very careful about using this for caching.
@@ -291,11 +334,22 @@ impl Deviation {
         let kind = &self.kind;
         let title = &self.title;
         let description = &self.description;
-        let download_url = &self.download_url;
         let additional_media_download_urls = &self.additional_media_download_urls;
 
-        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, download_url={download_url:?}, additional_media_download_urls={additional_media_download_urls:?})")
+        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, additional_media_download_urls={additional_media_download_urls:?})")
     }
+}
+
+fn get_url_file_name(url: &str) -> PyResult<String> {
+    let url =
+        deviantart::Url::parse(url).map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+    let file_name = url
+        .path_segments()
+        .ok_or_else(|| PyRuntimeError::new_err("missing path"))?
+        .next_back()
+        .ok_or_else(|| PyRuntimeError::new_err("missing file name"))?;
+
+    Ok(file_name.to_string())
 }
 
 #[pyclass]
