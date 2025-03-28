@@ -10,6 +10,7 @@ pub use self::types::ListFolderContentsResponse;
 pub use self::types::OEmbed;
 pub use self::types::ScrapedStashInfo;
 pub use self::types::ScrapedWebPageInfo;
+pub use url::Url;
 
 /// Library Error
 #[derive(Debug, thiserror::Error)]
