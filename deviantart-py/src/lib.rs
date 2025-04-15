@@ -297,14 +297,6 @@ impl Deviation {
         }
     }
 
-    /// Get the name of the file from the download url.
-    pub fn get_fullview_file_name(&self) -> PyResult<Option<String>> {
-        self.fullview_url
-            .as_deref()
-            .map(get_url_file_name)
-            .transpose()
-    }
-
     /// Dump this to a json string.
     ///
     /// Be very careful about using this for caching.
