@@ -18,7 +18,7 @@ class Folder:
     name: str
     owner_name: str
     deviation_ids: list[int]
-    
+
     def to_json(self, pretty: bool) -> str: ...
     @staticmethod
     def from_json(value: str) -> Deviation: ...
