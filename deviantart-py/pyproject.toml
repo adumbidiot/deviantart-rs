@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "deviantart-py"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -12,11 +12,30 @@ classifiers = [
 ]
 dynamic = ["version"]
 
-[tool.maturin]
-features = ["pyo3/extension-module"]
-
 [dependency-groups]
 dev = [
     "maturin>=1.8.3",
+    "mypy>=1.14.1",
     "ruff>=0.11.2",
 ]
+
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_any_expr = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+extra_checks = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_reexport = true
+strict_equality = true
+warn_unused_configs = true
