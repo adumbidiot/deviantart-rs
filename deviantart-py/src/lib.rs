@@ -172,7 +172,7 @@ impl Client {
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
 
         tokio_rt
-            .block_on(self.client.sign_in(username, password))
+            .block_on(self.client.login(username, password))
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))
     }
 

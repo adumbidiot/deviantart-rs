@@ -10,7 +10,7 @@ use reqwest_cookie_store::CookieStoreMutex;
 use std::sync::Arc;
 use url::Url;
 
-const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36";
+const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36";
 static ACCEPT_LANGUAGE_VALUE: HeaderValue = HeaderValue::from_static("en,en-US;q=0,5");
 static ACCEPT_VALUE: HeaderValue = HeaderValue::from_static("*/*");
 static REFERER_VALUE: HeaderValue = HeaderValue::from_static(HOME_URL);
@@ -108,10 +108,10 @@ impl Client {
         Ok(scraped_webpage)
     }
 
-    /// Sign in to get access to more results from apis.
+    /// Login to get access to more results from apis.
     ///
     /// This will also clean the cookie jar.
-    pub async fn sign_in(&self, username: &str, password: &str) -> Result<(), Error> {
+    pub async fn login(&self, username: &str, password: &str) -> Result<(), Error> {
         // Clean the jar of expired cookies
         {
             let mut cookie_store = self.cookie_store.lock().expect("cookie store is poisoned");
@@ -458,14 +458,14 @@ mod test {
 
     #[tokio::test]
     #[ignore]
-    async fn sign_in_works() {
+    async fn login_works() {
         let config: Config = Config::from_any(DEFAULT_CONFIG_PATH);
 
         let client = Client::new();
         client
-            .sign_in(&config.username, &config.password)
+            .login(&config.username, &config.password)
             .await
-            .expect("failed to sign in");
+            .expect("failed to login");
         let is_online = client
             .is_logged_in_online()
             .await
