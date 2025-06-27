@@ -12,7 +12,18 @@ ignore = []
 [licenses]
 confidence-threshold = 0.93
 private = { ignore = true }
-allow = [ "Apache-2.0", "MIT", "Unicode-DFS-2016", "BSD-3-Clause", "MPL-2.0", "ISC", "OpenSSL", "Unicode-3.0", "Apache-2.0 WITH LLVM-exception" ]
+allow = [ 
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-3-Clause",
+    "CDLA-Permissive-2.0",
+    "ISC",
+    "MIT",
+    "MPL-2.0",
+    "OpenSSL",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+]
 exceptions = []
 
 [[licenses.clarify]]
@@ -44,6 +55,7 @@ skip = [
     { name = "windows_x86_64_gnu", version = "0.52.6" },
     { name = "windows-targets", version = "0.52.6" },
     { name = "windows-sys", version = "0.52.0" },
+    { name = "windows-sys", version = "0.59.0" },
 ]
 
 deny = []
