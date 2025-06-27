@@ -34,7 +34,6 @@ fn real_main(options: Options) -> anyhow::Result<()> {
         .context("failed to start tokio runtime")?;
 
     tokio_rt.block_on(async_main(options))?;
-    eprintln!("Done.");
 
     Ok(())
 }
@@ -75,7 +74,7 @@ async fn try_signin_cli(
             (Some(username), Some(password)) => {
                 println!("logging in...");
                 client
-                    .sign_in(username, password)
+                    .login(username, password)
                     .await
                     .context("failed to login")?;
                 println!("logged in");

@@ -6,8 +6,8 @@ If you require uploading, please feel free to open an issue.
 
 ## Examples
 
-### Sign In
-Signing in is not necessary to use this library. 
+### Login
+Logging in is not necessary to use this library. 
 However, some content cannot be accessed without a login.
 ```rust
 #[tokio::main]
@@ -15,7 +15,7 @@ async fn main() {
     let client = deviantart::Client::new();
 
     client
-        .sign_in("username", "password")
+        .login("username", "password")
         .await
         .expect("failed to sign in");
 }
