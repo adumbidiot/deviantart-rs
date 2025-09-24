@@ -51,13 +51,8 @@ license-files = [
 multiple-versions = "warn"
 highlight = "all"
 skip = [
-    { name = "windows_x86_64_msvc", version = "0.52.6" },
-    { name = "windows_x86_64_gnu", version = "0.52.6" },
-    { name = "windows-targets", version = "0.52.6" },
-    { name = "windows-sys", version = "0.52.0" },
     { name = "windows-sys", version = "0.59.0" },
 ]
-
 deny = []
 
 [sources]
