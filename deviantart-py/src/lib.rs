@@ -47,6 +47,9 @@ pub struct Deviation {
 
     #[pyo3(get)]
     pub additional_media_download_urls: Option<Vec<Option<String>>>,
+
+    #[pyo3(get)]
+    pub additional_media_fullview_urls: Option<Vec<Option<String>>>,
 }
 
 #[pymethods]
@@ -164,6 +167,21 @@ impl Client {
                 additional_media
                     .iter()
                     .map(|additional_media| {
+                        if current_deviation_extended.is_da_protected.unwrap_or(false) {
+                            return None;
+                        }
+
+                        Some(additional_media.media.base_uri.as_ref()?.to_string())
+                    })
+                    .collect()
+            });
+        let additional_media_fullview_urls = current_deviation_extended
+            .additional_media
+            .as_ref()
+            .map(|additional_media| {
+                additional_media
+                    .iter()
+                    .map(|additional_media| {
                         additional_media.media.get_fullview_url().map(String::from)
                     })
                     .collect()
@@ -177,6 +195,7 @@ impl Client {
             download_url,
             fullview_url,
             additional_media_download_urls,
+            additional_media_fullview_urls,
         })
     }
 
