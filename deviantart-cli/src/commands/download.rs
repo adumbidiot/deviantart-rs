@@ -307,19 +307,23 @@ async fn download_image_cli(
 
         url
     } else {
+        // -1 from handling the "1" case seperately.
+        // -1 from converting this 1-based index to a 0-based index.
+        let image_index = usize::from(image_number - 1 - 1);
+        let additional_media = current_deviation_extended
+            .additional_media
+            .as_ref()
+            .context("no additional media")?
+            .get(image_index)
+            .context("missing additional image")?;
+
         let mut url = None;
-        if options.allow_fullview {
-            // -1 from handling the "1" case seperately.
-            // -1 from converting this 1-based index to a 0-based index.
-            let image_index = usize::from(image_number - 1 - 1);
-            url = current_deviation_extended
-                .additional_media
-                .as_ref()
-                .context("no additional media")?
-                .get(image_index)
-                .context("missing additional image")?
-                .media
-                .get_fullview_url();
+        if !current_deviation_extended.is_da_protected.unwrap_or(false) {
+            url = additional_media.media.base_uri.clone();
+        }
+
+        if url.is_none() && options.allow_fullview {
+            url = additional_media.media.get_fullview_url();
         }
         url
     };

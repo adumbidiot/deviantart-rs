@@ -228,6 +228,10 @@ pub struct DeviationExtended {
     #[serde(rename = "additionalMedia")]
     pub additional_media: Option<Vec<AdditionalMedia>>,
 
+    /// Whether this image is protected.
+    #[serde(rename = "isDaProtected")]
+    pub is_da_protected: Option<bool>,
+
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
