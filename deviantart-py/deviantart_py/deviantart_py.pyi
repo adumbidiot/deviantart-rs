@@ -6,6 +6,7 @@ class Deviation:
     download_url: str | None
     fullview_url: str | None
     additional_media_download_urls: list[str | None] | None
+    additional_media_fullview_urls: list[str | None] | None
 
     def get_file_name(self, type: str = "download") -> str: ...
     def to_json(self, pretty: bool) -> str: ...

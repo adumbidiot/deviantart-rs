@@ -4,6 +4,7 @@ use crate::util::sanitize_path;
 use anyhow::bail;
 use anyhow::ensure;
 use anyhow::Context;
+use deviantart::Url;
 use std::fmt::Write as _;
 use std::io::Write;
 
@@ -67,11 +68,19 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
     if current_deviation.is_literature() {
         download_literature_cli(current_deviation).await?;
     } else if current_deviation.is_image() {
+        let url = Url::parse(&options.url)?;
+        let image_number = url
+            .fragment()
+            .and_then(|image| image.strip_prefix("image-"))
+            .map(|value| value.parse::<u8>())
+            .transpose()?;
+
         download_image_cli(
             &client,
             current_deviation,
             current_deviation_extended,
             &options,
+            image_number,
         )
         .await?;
     } else if current_deviation.is_film() {
@@ -254,7 +263,12 @@ async fn download_image_cli(
     current_deviation: &deviantart::Deviation,
     current_deviation_extended: &deviantart::DeviationExtended,
     options: &Options,
+    image_number: Option<u8>,
 ) -> anyhow::Result<()> {
+    // TODO: We should probably download every image if the image number is not specified.
+    let image_number = image_number.unwrap_or(1);
+    ensure!(image_number != 0);
+
     println!("Downloading image...");
 
     let extension = current_deviation
@@ -262,7 +276,12 @@ async fn download_image_cli(
         .context("could not determine image extension")?;
     let title = current_deviation.title.as_str();
     let deviation_id = current_deviation.deviation_id;
-    let file_name = format!("{title}-{deviation_id}.{extension}",);
+    // TODO: We should branch here iff the deviation has multiple images.
+    let file_name = if image_number == 1 {
+        format!("{title}-{deviation_id}.{extension}")
+    } else {
+        format!("{title}-{deviation_id}-{image_number}.{extension}")
+    };
     let file_name = sanitize_path(&file_name);
     println!("Out Path: {file_name}");
     if tokio::fs::try_exists(&file_name)
@@ -273,17 +292,41 @@ async fn download_image_cli(
         return Ok(());
     }
 
-    let mut url = current_deviation_extended
-        .download
-        .as_ref()
-        .map(|download| download.url.clone())
-        .or_else(|| current_deviation.get_image_download_url());
+    let url = if image_number == 1 {
+        let mut url = current_deviation_extended
+            .download
+            .as_ref()
+            .map(|download| download.url.clone())
+            .or_else(|| current_deviation.get_image_download_url());
 
-    // This is not default as a "fullview" can be thought of as a "preview".
-    // It's not an actual download, but helps when downloads are disabled.
-    if url.is_none() && options.allow_fullview {
-        url = current_deviation.get_fullview_url();
-    }
+        // This is not default as a "fullview" can be thought of as a "preview".
+        // It's not an actual download, but helps when downloads are disabled.
+        if url.is_none() && options.allow_fullview {
+            url = current_deviation.get_fullview_url();
+        }
+
+        url
+    } else {
+        // -1 from handling the "1" case seperately.
+        // -1 from converting this 1-based index to a 0-based index.
+        let image_index = usize::from(image_number - 1 - 1);
+        let additional_media = current_deviation_extended
+            .additional_media
+            .as_ref()
+            .context("no additional media")?
+            .get(image_index)
+            .context("missing additional image")?;
+
+        let mut url = None;
+        if !current_deviation_extended.is_da_protected.unwrap_or(false) {
+            url = additional_media.media.base_uri.clone();
+        }
+
+        if url.is_none() && options.allow_fullview {
+            url = additional_media.media.get_fullview_url();
+        }
+        url
+    };
 
     let url = url.context("failed to select an image url")?;
 

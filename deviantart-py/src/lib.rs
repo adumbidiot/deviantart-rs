@@ -12,6 +12,103 @@ static TOKIO_RT: LazyLock<std::io::Result<tokio::runtime::Runtime>> = LazyLock::
         .build()
 });
 
+fn get_url_file_name(url: &str) -> PyResult<String> {
+    let url =
+        deviantart::Url::parse(url).map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+    let file_name = url
+        .path_segments()
+        .ok_or_else(|| PyRuntimeError::new_err("missing path"))?
+        .next_back()
+        .ok_or_else(|| PyRuntimeError::new_err("missing file name"))?;
+
+    Ok(file_name.to_string())
+}
+
+#[pyclass]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Deviation {
+    #[pyo3(set, get)]
+    pub id: u64,
+
+    #[pyo3(set, get)]
+    pub title: String,
+
+    #[pyo3(set, get)]
+    pub description: Option<String>,
+
+    #[pyo3(set, get, name = "type")]
+    pub kind: String,
+
+    #[pyo3(set, get)]
+    pub download_url: Option<String>,
+
+    #[pyo3(set, get)]
+    pub fullview_url: Option<String>,
+
+    #[pyo3(get)]
+    pub additional_media_download_urls: Option<Vec<Option<String>>>,
+
+    #[pyo3(get)]
+    pub additional_media_fullview_urls: Option<Vec<Option<String>>>,
+}
+
+#[pymethods]
+impl Deviation {
+    /// Get the name of the file.
+    #[pyo3(signature=(r#type="download"))]
+    pub fn get_file_name(&self, r#type: &str) -> PyResult<Option<String>> {
+        match r#type {
+            "download" => self
+                .download_url
+                .as_deref()
+                .map(get_url_file_name)
+                .transpose(),
+            "fullview" => self
+                .fullview_url
+                .as_deref()
+                .map(get_url_file_name)
+                .transpose(),
+            _ => Err(PyValueError::new_err(
+                "type must be \"download\" or \"fullview\"",
+            )),
+        }
+    }
+
+    /// Dump this to a json string.
+    ///
+    /// Be very careful about using this for caching.
+    /// The embedded download urls can and will expire.
+    #[pyo3(signature=(pretty=false))]
+    pub fn to_json(&self, pretty: bool) -> PyResult<String> {
+        let result = if pretty {
+            serde_json::to_string_pretty(&self)
+        } else {
+            serde_json::to_string(&self)
+        };
+
+        result.map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Parse this from a json string.
+    ///
+    /// Be very careful about using this for caching.
+    /// The embedded download urls can and will expire.
+    #[staticmethod]
+    pub fn from_json(value: &str) -> PyResult<Self> {
+        serde_json::from_str(value).map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    pub fn __repr__(&self) -> String {
+        let id = &self.id;
+        let kind = &self.kind;
+        let title = &self.title;
+        let description = &self.description;
+        let additional_media_download_urls = &self.additional_media_download_urls;
+
+        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, additional_media_download_urls={additional_media_download_urls:?})")
+    }
+}
+
 #[pyclass]
 pub struct Client {
     client: deviantart::Client,
@@ -70,7 +167,22 @@ impl Client {
                 additional_media
                     .iter()
                     .map(|additional_media| {
+                        if current_deviation_extended.is_da_protected.unwrap_or(false) {
+                            return None;
+                        }
+
                         Some(additional_media.media.base_uri.as_ref()?.to_string())
+                    })
+                    .collect()
+            });
+        let additional_media_fullview_urls = current_deviation_extended
+            .additional_media
+            .as_ref()
+            .map(|additional_media| {
+                additional_media
+                    .iter()
+                    .map(|additional_media| {
+                        additional_media.media.get_fullview_url().map(String::from)
                     })
                     .collect()
             });
@@ -83,6 +195,7 @@ impl Client {
             download_url,
             fullview_url,
             additional_media_download_urls,
+            additional_media_fullview_urls,
         })
     }
 
@@ -248,100 +361,6 @@ impl Default for Client {
     fn default() -> Self {
         Self::new()
     }
-}
-
-#[pyclass]
-#[derive(serde::Serialize, serde::Deserialize)]
-pub struct Deviation {
-    #[pyo3(set, get)]
-    pub id: u64,
-
-    #[pyo3(set, get)]
-    pub title: String,
-
-    #[pyo3(set, get)]
-    pub description: Option<String>,
-
-    #[pyo3(set, get, name = "type")]
-    pub kind: String,
-
-    #[pyo3(set, get)]
-    pub download_url: Option<String>,
-
-    #[pyo3(set, get)]
-    pub fullview_url: Option<String>,
-
-    #[pyo3(get)]
-    pub additional_media_download_urls: Option<Vec<Option<String>>>,
-}
-
-#[pymethods]
-impl Deviation {
-    /// Get the name of the file.
-    #[pyo3(signature=(r#type="download"))]
-    pub fn get_file_name(&self, r#type: &str) -> PyResult<Option<String>> {
-        match r#type {
-            "download" => self
-                .download_url
-                .as_deref()
-                .map(get_url_file_name)
-                .transpose(),
-            "fullview" => self
-                .fullview_url
-                .as_deref()
-                .map(get_url_file_name)
-                .transpose(),
-            _ => Err(PyValueError::new_err(
-                "type must be \"download\" or \"fullview\"",
-            )),
-        }
-    }
-
-    /// Dump this to a json string.
-    ///
-    /// Be very careful about using this for caching.
-    /// The embedded download urls can and will expire.
-    #[pyo3(signature=(pretty=false))]
-    pub fn to_json(&self, pretty: bool) -> PyResult<String> {
-        let result = if pretty {
-            serde_json::to_string_pretty(&self)
-        } else {
-            serde_json::to_string(&self)
-        };
-
-        result.map_err(|error| PyRuntimeError::new_err(error.to_string()))
-    }
-
-    /// Parse this from a json string.
-    ///
-    /// Be very careful about using this for caching.
-    /// The embedded download urls can and will expire.
-    #[staticmethod]
-    pub fn from_json(value: &str) -> PyResult<Self> {
-        serde_json::from_str(value).map_err(|error| PyRuntimeError::new_err(error.to_string()))
-    }
-
-    pub fn __repr__(&self) -> String {
-        let id = &self.id;
-        let kind = &self.kind;
-        let title = &self.title;
-        let description = &self.description;
-        let additional_media_download_urls = &self.additional_media_download_urls;
-
-        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, additional_media_download_urls={additional_media_download_urls:?})")
-    }
-}
-
-fn get_url_file_name(url: &str) -> PyResult<String> {
-    let url =
-        deviantart::Url::parse(url).map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
-    let file_name = url
-        .path_segments()
-        .ok_or_else(|| PyRuntimeError::new_err("missing path"))?
-        .next_back()
-        .ok_or_else(|| PyRuntimeError::new_err("missing file name"))?;
-
-    Ok(file_name.to_string())
 }
 
 #[pyclass]
