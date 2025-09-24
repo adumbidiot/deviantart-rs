@@ -70,7 +70,7 @@ impl Client {
                 additional_media
                     .iter()
                     .map(|additional_media| {
-                        Some(additional_media.media.base_uri.as_ref()?.to_string())
+                        additional_media.media.get_fullview_url().map(String::from)
                     })
                     .collect()
             });

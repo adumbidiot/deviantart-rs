@@ -61,29 +61,7 @@ impl Deviation {
 
     /// Get the fullview url for this [`Deviation`].
     pub fn get_fullview_url(&self) -> Option<Url> {
-        let mut url = self.media.base_uri.as_ref()?.clone();
-
-        // Allow the "content" section of the path to not exist, but the fullview data MUST exist.
-        if let Some(path) = self.media.get_fullview_media_type()?.content.as_ref() {
-            let mut path_segments_mut = url.path_segments_mut().ok()?;
-
-            for path in path.split('/').filter(|p| !p.is_empty()) {
-                // Replace "<pretty-name>" with the actual pretty name.
-                let pretty_name = self.media.pretty_name.as_ref()?;
-                let path = path.replace("<prettyName>", pretty_name);
-                path_segments_mut.push(&path);
-            }
-        }
-
-        // We assume that a token is not provided in cases where it is not needed.
-        // As such, this part is optional.
-        // So far, a token is allowed to be missing when the "content" section of the fullview data is missing
-        // Correct this if these assumptions are wrong.
-        if let Some(token) = self.media.token.first() {
-            url.query_pairs_mut().append_pair("token", token);
-        }
-
-        Some(url)
+        self.media.get_fullview_url()
     }
 
     /// Get the GIF url for this [`Deviation`].
