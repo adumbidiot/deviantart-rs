@@ -540,7 +540,10 @@ mod test {
         dbg!(response);
     }
 
+    // This is broken of CI.
+    // DeviantArt has probably blacklist GH's ips.
     #[tokio::test]
+    #[ignore]
     async fn oembed_works() {
         let url =
             "https://www.deviantart.com/tohokari-steel/art/A-Fictorian-Tale-Chapter-11-879180914";
