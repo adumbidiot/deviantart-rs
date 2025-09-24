@@ -10,7 +10,7 @@ anyhow = "1.0.100"
 deviantart = { path = "../deviantart", default-features = false }
 directories-next = "2.0.0"
 nd-util = { git = "https://github.com/nathaniel-daniel/nd-util-rs", features = [ "download-to-path" ] }
-toml = { version = "0.8.23", features = [ "preserve_order" ] }
+toml = { version = "0.9.7", features = [ "preserve_order" ] }
 tokio = { version = "1.47.1", features = [ "rt-multi-thread", "fs" ] }
 serde = { version = "1.0.226", features = [ "derive" ] }
 
