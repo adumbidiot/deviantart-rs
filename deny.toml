@@ -52,6 +52,7 @@ multiple-versions = "warn"
 highlight = "all"
 skip = [
     { name = "windows-sys", version = "0.59.0" },
+    { name = "cookie_store", version = "0.21.1" },
 ]
 deny = []
 
