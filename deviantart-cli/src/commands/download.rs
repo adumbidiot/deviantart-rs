@@ -319,7 +319,18 @@ async fn download_image_cli(
 
         let mut url = None;
         if !current_deviation_extended.is_da_protected.unwrap_or(false) {
-            url = additional_media.media.base_uri.clone();
+            url = additional_media.media.base_uri.clone().map(|mut url| {
+                // Some images require a token, some don't.
+                // I don't know what causes the token to be required.
+                // Regardless, always sending a token when possible doesn't seem to cause issues.
+                match additional_media.media.token.first().as_ref() {
+                    Some(token) => {
+                        url.query_pairs_mut().append_pair("token", token);
+                        url
+                    }
+                    None => url,
+                }
+            });
         }
 
         if url.is_none() && options.allow_fullview {

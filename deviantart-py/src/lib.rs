@@ -171,7 +171,23 @@ impl Client {
                             return None;
                         }
 
-                        Some(additional_media.media.base_uri.as_ref()?.to_string())
+                        additional_media
+                            .media
+                            .base_uri
+                            .clone()
+                            .map(|mut url| {
+                                // Some images require a token, some don't.
+                                // I don't know what causes the token to be required.
+                                // Regardless, always sending a token when possible doesn't seem to cause issues.
+                                match additional_media.media.token.first().as_ref() {
+                                    Some(token) => {
+                                        url.query_pairs_mut().append_pair("token", token);
+                                        url
+                                    }
+                                    None => url,
+                                }
+                            })
+                            .map(String::from)
                     })
                     .collect()
             });
