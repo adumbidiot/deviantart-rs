@@ -112,6 +112,54 @@ impl Deviation {
 }
 
 #[pyclass]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Folder {
+    #[pyo3(get, set)]
+    pub id: i64,
+
+    #[pyo3(set, get)]
+    pub name: String,
+
+    #[pyo3(set, get)]
+    pub owner_name: String,
+
+    #[pyo3(get, set)]
+    pub deviation_ids: Vec<u64>,
+}
+
+#[pymethods]
+impl Folder {
+    /// Dump this to a json string.
+    #[pyo3(signature=(pretty=false))]
+    pub fn to_json(&self, pretty: bool) -> PyResult<String> {
+        let result = if pretty {
+            serde_json::to_string_pretty(&self)
+        } else {
+            serde_json::to_string(&self)
+        };
+
+        result.map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    /// Parse this from a json string.
+    #[staticmethod]
+    pub fn from_json(value: &str) -> PyResult<Self> {
+        serde_json::from_str(value).map_err(|error| PyRuntimeError::new_err(error.to_string()))
+    }
+
+    pub fn __repr__(&self) -> String {
+        let id = &self.id;
+        let name = &self.name;
+        let owner_name = &self.owner_name;
+        let deviation_ids = &self.deviation_ids;
+
+        format!(
+            "Folder(id={id}, name={name}, owner_name={owner_name}, deviation_ids={deviation_ids:?})"
+        )
+    }
+}
+
+#[pyclass]
 pub struct Client {
     client: deviantart::Client,
 }
@@ -378,54 +426,6 @@ impl Client {
 impl Default for Client {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-#[pyclass]
-#[derive(serde::Serialize, serde::Deserialize)]
-pub struct Folder {
-    #[pyo3(get, set)]
-    pub id: u64,
-
-    #[pyo3(set, get)]
-    pub name: String,
-
-    #[pyo3(set, get)]
-    pub owner_name: String,
-
-    #[pyo3(get, set)]
-    pub deviation_ids: Vec<u64>,
-}
-
-#[pymethods]
-impl Folder {
-    /// Dump this to a json string.
-    #[pyo3(signature=(pretty=false))]
-    pub fn to_json(&self, pretty: bool) -> PyResult<String> {
-        let result = if pretty {
-            serde_json::to_string_pretty(&self)
-        } else {
-            serde_json::to_string(&self)
-        };
-
-        result.map_err(|error| PyRuntimeError::new_err(error.to_string()))
-    }
-
-    /// Parse this from a json string.
-    #[staticmethod]
-    pub fn from_json(value: &str) -> PyResult<Self> {
-        serde_json::from_str(value).map_err(|error| PyRuntimeError::new_err(error.to_string()))
-    }
-
-    pub fn __repr__(&self) -> String {
-        let id = &self.id;
-        let name = &self.name;
-        let owner_name = &self.owner_name;
-        let deviation_ids = &self.deviation_ids;
-
-        format!(
-            "Folder(id={id}, name={name}, owner_name={owner_name}, deviation_ids={deviation_ids:?})"
-        )
     }
 }
 
