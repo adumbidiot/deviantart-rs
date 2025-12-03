@@ -145,14 +145,14 @@ impl ScrapedWebPageInfo {
     }
 
     /// Get the current folder id, if in a gallery.
-    pub fn get_current_folder_id(&self) -> Option<u64> {
+    pub fn get_current_folder_id(&self) -> Option<i64> {
         Some(self.gallection_section.as_ref()?.selected_folder_id)
     }
 
     /// Get a stream for folder post ids, by folder id.
     ///
     /// This will return the deviation ids for the current folder.
-    pub fn get_folder_deviations_stream(&self, folder_id: u64) -> Option<&WithOffsetStream> {
+    pub fn get_folder_deviations_stream(&self, folder_id: i64) -> Option<&WithOffsetStream> {
         let key = format!("folder-deviations-gallery-{folder_id}");
 
         self.streams
@@ -163,7 +163,7 @@ impl ScrapedWebPageInfo {
     }
 
     /// Get a gallery folder entity by id
-    pub fn get_gallery_folder_entity(&self, folder_id: u64) -> Option<&GalleryFolder> {
+    pub fn get_gallery_folder_entity(&self, folder_id: i64) -> Option<&GalleryFolder> {
         self.entities
             .as_ref()?
             .gallery_folder
@@ -478,7 +478,7 @@ pub struct GallectionSection {
 
     /// The id of the selected folder
     #[serde(rename = "selectedFolderId")]
-    pub selected_folder_id: u64,
+    pub selected_folder_id: i64,
 
     /// The total number of pages
     #[serde(rename = "totalPages")]
