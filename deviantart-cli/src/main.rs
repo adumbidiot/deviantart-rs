@@ -3,8 +3,8 @@ mod config;
 pub mod util;
 
 use self::config::Config;
-use anyhow::bail;
 use anyhow::Context;
+use anyhow::bail;
 use std::path::PathBuf;
 
 #[derive(argh::FromArgs)]

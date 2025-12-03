@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "deviantart-py"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -16,6 +16,8 @@ dynamic = ["version"]
 dev = [
     "maturin>=1.8.3",
     "mypy>=1.14.1",
+    "pytest>=9.0.1",
+    "python-dotenv>=1.2.1",
     "ruff>=0.11.2",
 ]
 
