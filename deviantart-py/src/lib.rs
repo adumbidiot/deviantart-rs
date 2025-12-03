@@ -105,7 +105,9 @@ impl Deviation {
         let description = &self.description;
         let additional_media_download_urls = &self.additional_media_download_urls;
 
-        format!("Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, additional_media_download_urls={additional_media_download_urls:?})")
+        format!(
+            "Deviation(id={id}, type={kind:?}, title={title:?}, description={description:?}, additional_media_download_urls={additional_media_download_urls:?})"
+        )
     }
 }
 

@@ -1,9 +1,9 @@
 use crate::load_config_cli;
 use crate::try_signin_cli;
 use crate::util::sanitize_path;
+use anyhow::Context;
 use anyhow::bail;
 use anyhow::ensure;
-use anyhow::Context;
 use deviantart::Url;
 use std::fmt::Write as _;
 use std::io::Write;
@@ -247,7 +247,10 @@ where
                 .markup
                 .as_ref()
                 .context("missing markdown")?;
-            write!(&mut html, "<div style=\"color: #b1b1b9; font-size: 18px; line-height: 1.5; letter-spacing: .3px;\">{markdown}</div>")?;
+            write!(
+                &mut html,
+                "<div style=\"color: #b1b1b9; font-size: 18px; line-height: 1.5; letter-spacing: .3px;\">{markdown}</div>"
+            )?;
         }
     }
 
