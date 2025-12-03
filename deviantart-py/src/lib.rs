@@ -129,7 +129,7 @@ impl Client {
             .as_ref()
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
 
-        let source = if let Ok(url) = source.downcast::<PyString>() {
+        let source = if let Ok(url) = source.cast::<PyString>() {
             url.to_cow()?.into_owned()
         } else if let Ok(id) = source.extract::<u64>() {
             format!("https://www.deviantart.com/view/{id}")
