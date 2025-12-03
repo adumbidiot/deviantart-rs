@@ -51,8 +51,13 @@ license-files = [
 multiple-versions = "warn"
 highlight = "all"
 skip = [
-    { name = "windows-sys", version = "0.59.0" },
     { name = "cookie_store", version = "0.21.1" },
+    
+    # Windows crate updates take awhile to propagate through the ecosystem and happen often.
+    { name = "windows-sys", version = "0" },
+    { name = "windows-targets", version = "0" },
+    { name = "windows_x86_64_gnu", version = "0" },
+    { name = "windows_x86_64_msvc", version = "0" },
 ]
 deny = []
 
