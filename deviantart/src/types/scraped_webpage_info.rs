@@ -228,13 +228,41 @@ pub struct DeviationExtended {
     #[serde(rename = "additionalMedia")]
     pub additional_media: Option<Vec<AdditionalMedia>>,
 
-    /// Whether this image is protected.
-    #[serde(rename = "isDaProtected")]
-    pub is_da_protected: Option<bool>,
+    /// The id of the deviation this belongs to.
+    #[serde(rename = "parentDeviationEntityId")]
+    pub parent_deviation_entity_id: u64,
 
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
+}
+
+impl DeviationExtended {
+    /// Check if additional media is downloadable.
+    ///
+    /// Older additionalMedia deviation images can be downloaded.
+    /// Newer ones cannot.
+    ///
+    /// See: https://github.com/mikf/gallery-dl/issues/6653#issuecomment-2816585744
+    pub fn can_download_additional_media(&self) -> bool {
+        // Return false if there is no additional media.
+        let additional_media = match self.additional_media.as_ref() {
+            Some(additional_media) => additional_media,
+            None => return false,
+        };
+
+        // Old deviations can always be downloaded.
+        // ID determined experimentally.
+        if self.parent_deviation_entity_id < 1184619292 {
+            return true;
+        }
+
+        // The second token is for downloads.
+        // If present, we can download.
+        additional_media
+            .iter()
+            .all(|entry| entry.media.token.len() > 1)
+    }
 }
 
 /// A gallery folder

@@ -306,7 +306,7 @@ async fn download_image_cli(
         // This is not default as a "fullview" can be thought of as a "preview".
         // It's not an actual download, but helps when downloads are disabled.
         if url.is_none() && options.allow_fullview {
-            url = current_deviation.get_fullview_url();
+            url = Some(current_deviation.get_fullview_url(Default::default())?);
         }
 
         url
@@ -322,7 +322,7 @@ async fn download_image_cli(
             .context("missing additional image")?;
 
         let mut url = None;
-        if !current_deviation_extended.is_da_protected.unwrap_or(false) {
+        if current_deviation_extended.can_download_additional_media() {
             url = additional_media.media.base_uri.clone().map(|mut url| {
                 // Some images require a token, some don't.
                 // I don't know what causes the token to be required.
@@ -338,12 +338,19 @@ async fn download_image_cli(
         }
 
         if url.is_none() && options.allow_fullview {
-            url = additional_media.media.get_fullview_url();
+            url = Some(additional_media.media.get_fullview_url(
+                deviantart::GetFullviewUrlOptions {
+                    strp: Some(false),
+                    quality: Some(100),
+                    png: true,
+                },
+            )?);
         }
         url
     };
 
     let url = url.context("failed to select an image url")?;
+    // dbg!(url.as_str());
 
     nd_util::download_to_path(&client.client, url.as_str(), file_name).await?;
 

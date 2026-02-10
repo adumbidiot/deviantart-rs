@@ -1,3 +1,4 @@
+use anyhow::Context;
 use pyo3::exceptions::PyRuntimeError;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -43,13 +44,13 @@ pub struct Deviation {
     pub download_url: Option<String>,
 
     #[pyo3(set, get)]
-    pub fullview_url: Option<String>,
+    pub fullview_url: String,
 
     #[pyo3(get)]
     pub additional_media_download_urls: Option<Vec<Option<String>>>,
 
     #[pyo3(get)]
-    pub additional_media_fullview_urls: Option<Vec<Option<String>>>,
+    pub additional_media_fullview_urls: Option<Vec<String>>,
 }
 
 #[pymethods]
@@ -63,11 +64,7 @@ impl Deviation {
                 .as_deref()
                 .map(get_url_file_name)
                 .transpose(),
-            "fullview" => self
-                .fullview_url
-                .as_deref()
-                .map(get_url_file_name)
-                .transpose(),
+            "fullview" => get_url_file_name(&self.fullview_url).map(Some),
             _ => Err(PyValueError::new_err(
                 "type must be \"download\" or \"fullview\"",
             )),
@@ -208,7 +205,10 @@ impl Client {
             .or_else(|| current_deviation.get_download_url())
             .map(String::from);
 
-        let fullview_url = current_deviation.get_fullview_url().map(String::from);
+        let fullview_url = current_deviation
+            .get_fullview_url(Default::default())
+            .context("failed to get fullview url")
+            .map(String::from)?;
 
         let additional_media_download_urls = current_deviation_extended
             .additional_media
@@ -217,7 +217,7 @@ impl Client {
                 additional_media
                     .iter()
                     .map(|additional_media| {
-                        if current_deviation_extended.is_da_protected.unwrap_or(false) {
+                        if !current_deviation_extended.can_download_additional_media() {
                             return None;
                         }
 
@@ -248,10 +248,19 @@ impl Client {
                 additional_media
                     .iter()
                     .map(|additional_media| {
-                        additional_media.media.get_fullview_url().map(String::from)
+                        additional_media
+                            .media
+                            .get_fullview_url(deviantart::GetFullviewUrlOptions {
+                                strp: Some(false),
+                                quality: Some(100),
+                                png: true,
+                            })
+                            .map(String::from)
                     })
-                    .collect()
-            });
+                    .collect::<Result<_, _>>()
+            })
+            .transpose()
+            .context("failed to get fullview urls for additional media")?;
 
         Ok(Deviation {
             id: current_deviation.deviation_id,
@@ -278,10 +287,7 @@ impl Client {
             .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
 
         let url = if use_fullview {
-            deviation
-                .fullview_url
-                .as_ref()
-                .ok_or(PyValueError::new_err("deviation is missing a fullview url"))?
+            &deviation.fullview_url
         } else {
             deviation
                 .download_url
