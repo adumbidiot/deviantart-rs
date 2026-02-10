@@ -631,10 +631,15 @@ mod test {
             .expect("failed to look up deviations");
         let first = &results.first().expect("no results");
 
-        let url = first
-            .get_download_url()
-            .or_else(|| first.get_fullview_url())
-            .expect("failed to find download url");
+        let url = first.get_download_url().unwrap_or_else(|| {
+            first
+                .get_fullview_url(crate::GetFullviewUrlOptions {
+                    quality: Some(100),
+                    strp: Some(false),
+                    png: true,
+                })
+                .expect("failed to find fullview url")
+        });
         let bytes = client
             .client
             .get(url)
