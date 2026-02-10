@@ -7,6 +7,7 @@ use anyhow::ensure;
 use deviantart::Url;
 use std::fmt::Write as _;
 use std::io::Write;
+use std::path::Path;
 
 #[derive(argh::FromArgs)]
 #[argh(
@@ -116,7 +117,7 @@ async fn download_literature_cli(current_deviation: &deviantart::Deviation) -> a
         return Ok(());
     }
 
-    let temp_path = nd_util::with_push_extension(&file_name, "part");
+    let temp_path = Path::new(&file_name).with_added_extension("part");
     let mut temp_path = tokio::task::spawn_blocking(move || {
         let temp_file = std::fs::OpenOptions::new()
             .create_new(true)
