@@ -13,6 +13,8 @@ pub mod scraped_webpage_info;
 
 pub use self::deviation::Deviation;
 pub use self::list_folder_contents_response::ListFolderContentsResponse;
+pub use self::media::GetFullviewUrlError;
+pub use self::media::GetFullviewUrlOptions;
 pub use self::media::Media;
 pub use self::oembed::OEmbed;
 pub use self::scraped_stash_info::ScrapedStashInfo;

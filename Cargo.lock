@@ -292,6 +292,7 @@ dependencies = [
 name = "deviantart-py"
 version = "0.0.0"
 dependencies = [
+ "anyhow",
  "deviantart",
  "pyo3",
  "serde",
@@ -1110,6 +1111,7 @@ version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcf3ccafdf54c050be48a3a086d372f77ba6615f5057211607cd30e5ac5cec6d"
 dependencies = [
+ "anyhow",
  "libc",
  "once_cell",
  "portable-atomic",

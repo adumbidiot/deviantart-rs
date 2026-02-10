@@ -1,3 +1,5 @@
+use super::GetFullviewUrlError;
+use super::GetFullviewUrlOptions;
 use super::Media;
 use std::{collections::HashMap, path::Path};
 use url::Url;
@@ -60,8 +62,11 @@ impl Deviation {
     }
 
     /// Get the fullview url for this [`Deviation`].
-    pub fn get_fullview_url(&self) -> Option<Url> {
-        self.media.get_fullview_url()
+    pub fn get_fullview_url(
+        &self,
+        options: GetFullviewUrlOptions,
+    ) -> Result<Url, GetFullviewUrlError> {
+        self.media.get_fullview_url(options)
     }
 
     /// Get the GIF url for this [`Deviation`].
