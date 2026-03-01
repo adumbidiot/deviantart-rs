@@ -5,7 +5,7 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cookie_store = { version = "0.22.0", default-features = false }
+cookie_store = { version = "0.22.1", default-features = false }
 itoa = "1.0.17"
 once_cell = { version = "1.21.3", default-features = false }
 regex = "1.12.3"

@@ -9,7 +9,7 @@ name = "deviantart_py"
 crate-type = [ "cdylib" ]
 
 [dependencies]
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 deviantart = { version = "0.0.0", path = "../deviantart" }
 pyo3 = { version = "0.28.2", features = [ "abi3", "abi3-py310", "anyhow" ] }
 serde = { version = "1.0.228", features = [ "derive" ] }
