@@ -500,17 +500,9 @@ pub struct StreamParams {
 /// Gallery selection info
 #[derive(Debug, serde::Deserialize)]
 pub struct GallectionSection {
-    /// The current page
-    #[serde(rename = "currentPage")]
-    pub page: u64,
-
     /// The id of the selected folder
     #[serde(rename = "selectedFolderId")]
     pub selected_folder_id: i64,
-
-    /// The total number of pages
-    #[serde(rename = "totalPages")]
-    pub total_pages: u64,
 
     /// Unknown data
     #[serde(flatten)]
