@@ -31,7 +31,7 @@ fn real_main(options: Options) -> anyhow::Result<()> {
     let tokio_rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
-        .context("failed to start tokio runtime")?;
+        .context("Failed to start tokio runtime")?;
 
     tokio_rt.block_on(async_main(options))?;
 
@@ -61,8 +61,8 @@ async fn try_signin_cli(
     username: Option<&str>,
     password: Option<&str>,
 ) -> anyhow::Result<()> {
-    if let Err(e) = load_cookie_jar(client).await {
-        eprintln!("failed to load cookie jar: {e:?}");
+    if let Err(error) = load_cookie_jar(client).await {
+        eprintln!("Failed to load cookie jar: {error:?}");
     }
 
     if !client
@@ -72,29 +72,29 @@ async fn try_signin_cli(
     {
         match (username, password) {
             (Some(username), Some(password)) => {
-                println!("logging in...");
+                println!("Logging in...");
                 client
                     .login(username, password)
                     .await
                     .context("failed to login")?;
-                println!("logged in");
+                println!("Logged in");
                 println!();
 
-                if let Err(e) = save_cookie_jar(client)
+                if let Err(error) = save_cookie_jar(client)
                     .await
-                    .context("failed to save cookies")
+                    .context("Failed to save cookies")
                 {
-                    println!("{e:?}");
+                    println!("{error:?}");
                 }
             }
             (None, Some(_password)) => {
-                bail!("missing username");
+                bail!("Missing username");
             }
             (Some(_username), None) => {
-                bail!("missing password");
+                bail!("Missing password");
             }
             (None, None) => {
-                bail!("missing username and password");
+                bail!("Missing username and password");
             }
         }
     }
@@ -103,33 +103,47 @@ async fn try_signin_cli(
 }
 
 async fn load_config_cli() -> Config {
-    Config::load().await.unwrap_or_else(|e| {
-        println!("failed to load config: {e:?}");
+    Config::load().await.unwrap_or_else(|error| {
+        println!("failed to load config: {error:?}");
         Config::new()
     })
 }
 
 fn get_cookie_file_path() -> anyhow::Result<PathBuf> {
-    let base_dirs = directories_next::BaseDirs::new().context("failed to get base dirs")?;
-    Ok(base_dirs.data_dir().join("deviantart/cookies.json"))
+    let base_dirs = directories_next::BaseDirs::new().context("Failed to get base dirs")?;
+    Ok(base_dirs.data_dir().join("deviantart").join("cookies.txt"))
 }
 
 async fn load_cookie_jar(client: &deviantart::Client) -> anyhow::Result<()> {
     use std::{fs::File, io::BufReader};
 
-    let cookie_file = File::open(get_cookie_file_path()?).context("failed to read cookies")?;
-    client
-        .load_json_cookies(BufReader::new(cookie_file))
-        .await?;
+    let cookie_file = File::open(get_cookie_file_path()?).context("Failed to read cookies")?;
+
+    let cookie_store = client.cookie_store.clone();
+    tokio::task::spawn_blocking(move || {
+        let new_cookie_store =
+            netscape::load(&mut BufReader::new(cookie_file)).map_err(anyhow::Error::msg)?;
+        let mut cookie_store = cookie_store.lock().expect("Cookie store is poisoned");
+        *cookie_store = new_cookie_store;
+        anyhow::Ok(())
+    })
+    .await??;
+
     Ok(())
 }
 
 async fn save_cookie_jar(client: &deviantart::Client) -> anyhow::Result<()> {
     use std::fs::File;
 
-    let cookie_file =
-        File::create(get_cookie_file_path()?).context("failed to create cookie file")?;
-    client.save_json_cookies(cookie_file).await?;
+    let path = get_cookie_file_path()?;
+    let mut cookie_file = File::create(path).context("Failed to create cookie file")?;
+    let cookie_store = client.cookie_store.clone();
+    tokio::task::spawn_blocking(move || {
+        let cookie_store = cookie_store.lock().expect("Cookie store is poisoned");
+        netscape::save(&cookie_store, &mut cookie_file).map_err(anyhow::Error::msg)?;
+        anyhow::Ok(())
+    })
+    .await??;
 
     Ok(())
 }

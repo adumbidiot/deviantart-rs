@@ -10,7 +10,7 @@ use reqwest_cookie_store::CookieStoreMutex;
 use std::sync::Arc;
 use url::Url;
 
-const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36";
+const USER_AGENT_STR: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36";
 static ACCEPT_LANGUAGE_VALUE: HeaderValue = HeaderValue::from_static("en,en-US;q=0,5");
 static ACCEPT_VALUE: HeaderValue = HeaderValue::from_static("*/*");
 static REFERER_VALUE: HeaderValue = HeaderValue::from_static(HOME_URL);
@@ -52,7 +52,7 @@ impl Client {
             .user_agent(user_agent)
             .default_headers(default_headers)
             .build()
-            .expect("failed to build deviantart client");
+            .expect("Failed to build deviantart client");
 
         Client {
             client,
@@ -218,7 +218,7 @@ impl Client {
 
     /// OEmbed API
     pub async fn get_oembed(&self, url: &str) -> Result<OEmbed, Error> {
-        let url = Url::parse_with_params("https://backend.deviantart.com/oembed", &[("url", url)])?;
+        let url = Url::parse_with_params("https://backend.deviantart.com/oembed", [("url", url)])?;
         let res = self
             .client
             .get(url.as_str())
@@ -236,7 +236,7 @@ impl Client {
         query: &str,
         cursor: Option<&str>,
     ) -> Result<ScrapedWebPageInfo, Error> {
-        let mut url = Url::parse_with_params("https://www.deviantart.com/search", &[("q", query)])?;
+        let mut url = Url::parse_with_params("https://www.deviantart.com/search", [("q", query)])?;
         {
             let mut query_pairs = url.query_pairs_mut();
             if let Some(cursor) = cursor {

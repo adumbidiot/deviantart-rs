@@ -4,6 +4,7 @@ members = [
     "deviantart",
     "deviantart-cli",
     "deviantart-py",
+    "netscape",
 ]
 
 [profile.release]
