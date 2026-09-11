@@ -218,7 +218,7 @@ impl Client {
 
     /// OEmbed API
     pub async fn get_oembed(&self, url: &str) -> Result<OEmbed, Error> {
-        let url = Url::parse_with_params("https://backend.deviantart.com/oembed", &[("url", url)])?;
+        let url = Url::parse_with_params("https://backend.deviantart.com/oembed", [("url", url)])?;
         let res = self
             .client
             .get(url.as_str())
@@ -236,7 +236,7 @@ impl Client {
         query: &str,
         cursor: Option<&str>,
     ) -> Result<ScrapedWebPageInfo, Error> {
-        let mut url = Url::parse_with_params("https://www.deviantart.com/search", &[("q", query)])?;
+        let mut url = Url::parse_with_params("https://www.deviantart.com/search", [("q", query)])?;
         {
             let mut query_pairs = url.query_pairs_mut();
             if let Some(cursor) = cursor {
