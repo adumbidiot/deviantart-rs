@@ -488,10 +488,6 @@ pub struct StreamParams {
     #[serde(rename = "requestEndpoint")]
     pub request_endpoint: String,
 
-    /// ?
-    #[serde(rename = "initialOffset")]
-    pub initial_offset: u64,
-
     /// Unknown data
     #[serde(flatten)]
     pub unknown: HashMap<String, serde_json::Value>,
