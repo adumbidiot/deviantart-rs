@@ -241,7 +241,7 @@ mod test {
             .secure(true)
             .expires(RawExpiration::Session)
             .build();
-        let url_raw = format!("https://example.com/");
+        let url_raw = "https://example.com/".to_string();
         let url = Url::parse(&url_raw).expect("failed to parse url");
         cookie_store
             .insert_raw(&cookie, &url)
