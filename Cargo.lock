@@ -291,6 +291,7 @@ dependencies = [
  "deviantart",
  "directories-next",
  "nd-util",
+ "netscape",
  "serde",
  "tokio",
  "toml",
@@ -935,6 +936,16 @@ dependencies = [
  "reqwest",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "netscape"
+version = "0.0.0"
+dependencies = [
+ "cookie",
+ "cookie_store",
+ "time",
+ "url",
 ]
 
 [[package]]

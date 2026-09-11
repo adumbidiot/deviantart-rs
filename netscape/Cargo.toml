@@ -1,0 +1,11 @@
+[package]
+name = "netscape"
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+cookie = "0.18.2"
+cookie_store = "0.22.1"
+time = "0.3.55"
+url = "2.5.8"
