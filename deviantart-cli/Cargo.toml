@@ -13,6 +13,7 @@ nd-util = { git = "https://github.com/nathaniel-daniel/nd-util-rs", features = [
 toml = { version = "1.1.6", features = [ "preserve_order" ] }
 tokio = { version = "1.53.1", features = [ "rt-multi-thread", "fs" ] }
 serde = { version = "1.0.229", features = [ "derive" ] }
+netscape = { version = "0.0.0", path = "../netscape" }
 
 [features]
 default = [
