@@ -79,6 +79,9 @@ impl ScrapedWebPageInfo {
             .replace("\\\"", "\"")
             .replace("\\'", "'")
             .replace("\\\\", "\\");
+        
+        // std::fs::write("out.json", capture.as_str()).unwrap();
+        
         Ok(serde_json::from_str(&capture)?)
     }
 
@@ -477,8 +480,11 @@ pub struct BrowsePageStream {
 #[derive(Debug, serde::Deserialize)]
 pub struct StreamParams {
     /// Request params
+    ///
+    /// This can be at least either a string or a bool.
+    /// "include_hreflangs": true
     #[serde(rename = "requestParams")]
-    pub request_params: HashMap<String, String>,
+    pub request_params: HashMap<String, serde_json::Value>,
 
     /// ?
     #[serde(rename = "itemType")]
