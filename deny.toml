@@ -58,7 +58,6 @@ skip = [
     # { name = "windows_x86_64_msvc", version = "0" },
     
     { name = "syn", version = "2.0.119" },
-    { name = "base64", version = "0.22.1" },
 ]
 deny = []
 

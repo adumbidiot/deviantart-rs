@@ -69,7 +69,7 @@ impl Client {
         tokio::task::spawn_blocking(move || {
             let new_cookie_store = cookie_store::serde::json::load(reader)
                 .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
-            let mut cookie_store = cookie_store.lock().expect("cookie store is poisoned");
+            let mut cookie_store = cookie_store.lock().expect("Cookie store is poisoned");
             *cookie_store = new_cookie_store;
             Ok(())
         })
@@ -83,7 +83,7 @@ impl Client {
     {
         let cookie_store = self.cookie_store.clone();
         tokio::task::spawn_blocking(move || {
-            let cookie_store = cookie_store.lock().expect("cookie store is poisoned");
+            let cookie_store = cookie_store.lock().expect("Cookie store is poisoned");
             cookie_store::serde::json::save(&cookie_store, &mut writer)
                 .map_err(|e| Error::CookieStore(WrapBoxError(e)))?;
             Ok(writer)
@@ -114,7 +114,7 @@ impl Client {
     pub async fn login(&self, username: &str, password: &str) -> Result<(), Error> {
         // Clean the jar of expired cookies
         {
-            let mut cookie_store = self.cookie_store.lock().expect("cookie store is poisoned");
+            let mut cookie_store = self.cookie_store.lock().expect("Cookie store is poisoned");
 
             // We need to allocate here as the cookie_store iter cannot be alive when we try to remove items from the cookie store.
             let to_remove: Vec<_> = cookie_store
