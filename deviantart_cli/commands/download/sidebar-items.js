@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["download_film_cli","download_image_cli","download_literature_cli","execute","write_html"],"struct":["Options"]};
