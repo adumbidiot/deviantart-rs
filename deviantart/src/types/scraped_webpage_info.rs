@@ -79,9 +79,9 @@ impl ScrapedWebPageInfo {
             .replace("\\\"", "\"")
             .replace("\\'", "'")
             .replace("\\\\", "\\");
-        
+
         // std::fs::write("out.json", capture.as_str()).unwrap();
-        
+
         Ok(serde_json::from_str(&capture)?)
     }
 
