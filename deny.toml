@@ -50,7 +50,7 @@ multiple-versions = "warn"
 highlight = "all"
 skip = [    
     # Windows crate updates take awhile to propagate through the ecosystem and happen often.
-    { name = "windows-sys", version = "0" },
+    # { name = "windows-sys", version = "0" },
     # { name = "windows-targets", version = "0" },
     # { name = "windows_x86_64_gnu", version = "0" },
     # { name = "windows_x86_64_msvc", version = "0" },
