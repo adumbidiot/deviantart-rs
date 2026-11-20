@@ -16,10 +16,8 @@ allow = [
     "Apache-2.0",
     "Apache-2.0 WITH LLVM-exception",
     "BSD-3-Clause",
-    "CDLA-Permissive-2.0",
     "ISC",
     "MIT",
-    "MPL-2.0",
     "OpenSSL",
     "Unicode-3.0",
     "Unicode-DFS-2016",
@@ -52,7 +50,7 @@ multiple-versions = "warn"
 highlight = "all"
 skip = [    
     # Windows crate updates take awhile to propagate through the ecosystem and happen often.
-    # { name = "windows-sys", version = "0" },
+    { name = "windows-sys", version = "0" },
     # { name = "windows-targets", version = "0" },
     # { name = "windows_x86_64_gnu", version = "0" },
     # { name = "windows_x86_64_msvc", version = "0" },
