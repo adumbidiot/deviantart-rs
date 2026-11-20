@@ -44,13 +44,13 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
     let scraped_webpage_info = client
         .scrape_webpage(&options.url)
         .await
-        .context("failed to scrape webpage")?;
+        .context("Failed to scrape webpage")?;
     let current_deviation = scraped_webpage_info
         .get_current_deviation()
-        .context("failed to get current deviation")?;
+        .context("Failed to get current deviation")?;
     let current_deviation_extended = scraped_webpage_info
         .get_current_deviation_extended()
-        .context("failed to get current deviation extended")?;
+        .context("Failed to get current deviation extended")?;
 
     println!("Title: {}", current_deviation.title);
     println!("ID: {}", current_deviation.deviation_id);
@@ -75,19 +75,25 @@ pub async fn execute(client: deviantart::Client, options: Options) -> anyhow::Re
             .and_then(|image| image.strip_prefix("image-"))
             .map(|value| value.parse::<u8>())
             .transpose()?;
+        // ?file=n
+        let file = url
+            .query_pairs()
+            .find(|(key, _value)| key == "file")
+            .map(|(_key, value)| value.parse::<u8>())
+            .transpose()?;
 
         download_image_cli(
             &client,
             current_deviation,
             current_deviation_extended,
             &options,
-            image_number,
+            file.or(image_number),
         )
         .await?;
     } else if current_deviation.is_film() {
         download_film_cli(&client, current_deviation).await?;
     } else {
-        bail!("unknown deviation type: {}", current_deviation.kind);
+        bail!("Unknown deviation type: {}", current_deviation.kind);
     }
 
     Ok(())
@@ -101,7 +107,7 @@ async fn download_literature_cli(current_deviation: &deviantart::Deviation) -> a
     let text_content = current_deviation
         .text_content
         .as_ref()
-        .context("deviation is missing text content")?
+        .context("Deviation is missing text content")?
         .clone();
 
     let title = current_deviation.title.to_string();
@@ -111,9 +117,9 @@ async fn download_literature_cli(current_deviation: &deviantart::Deviation) -> a
 
     if tokio::fs::try_exists(&file_name)
         .await
-        .context("failed to check if file exists")?
+        .context("Failed to check if file exists")?
     {
-        println!("file already exists");
+        println!("File already exists");
         return Ok(());
     }
 
@@ -269,8 +275,33 @@ async fn download_image_cli(
     options: &Options,
     image_number: Option<u8>,
 ) -> anyhow::Result<()> {
-    // TODO: We should probably download every image if the image number is not specified.
-    let image_number = image_number.unwrap_or(1);
+    let image_number = match image_number {
+        Some(image_number) => image_number,
+        None => {
+            // If image number is not specifed, download all.
+            let additional_media_len = current_deviation_extended
+                .additional_media
+                .as_ref()
+                .map(|media| media.len());
+
+            if let Some(additional_media_len) = additional_media_len {
+                let max_image_number = u8::try_from(additional_media_len)? + 1;
+                for image_number in 1..=max_image_number {
+                    Box::pin(download_image_cli(
+                        client,
+                        current_deviation,
+                        current_deviation_extended,
+                        options,
+                        Some(image_number),
+                    ))
+                    .await?;
+                }
+                return Ok(());
+            }
+
+            1
+        }
+    };
     ensure!(image_number != 0);
 
     println!("Downloading image...");
@@ -280,8 +311,8 @@ async fn download_image_cli(
         .context("could not determine image extension")?;
     let title = current_deviation.title.as_str();
     let deviation_id = current_deviation.deviation_id;
-    // TODO: We should branch here iff the deviation has multiple images.
-    let file_name = if image_number == 1 {
+    let deviation_has_multiple_images = current_deviation_extended.additional_media.is_some();
+    let file_name = if !deviation_has_multiple_images {
         format!("{title}-{deviation_id}.{extension}")
     } else {
         format!("{title}-{deviation_id}-{image_number}.{extension}")
@@ -290,9 +321,9 @@ async fn download_image_cli(
     println!("Out Path: {file_name}");
     if tokio::fs::try_exists(&file_name)
         .await
-        .context("failed to check if file exists")?
+        .context("Failed to check if file exists")?
     {
-        println!("file already exists");
+        println!("File already exists");
         return Ok(());
     }
 
@@ -317,9 +348,9 @@ async fn download_image_cli(
         let additional_media = current_deviation_extended
             .additional_media
             .as_ref()
-            .context("no additional media")?
+            .context("No additional media")?
             .get(image_index)
-            .context("missing additional image")?;
+            .context("Missing additional image")?;
 
         let mut url = None;
         if current_deviation_extended.can_download_additional_media() {
@@ -349,7 +380,7 @@ async fn download_image_cli(
         url
     };
 
-    let url = url.context("failed to select an image url")?;
+    let url = url.context("Failed to select an image url")?;
     // dbg!(url.as_str());
 
     nd_util::download_to_path(&client.client, url.as_str(), file_name).await?;
